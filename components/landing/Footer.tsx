@@ -1,0 +1,111 @@
+"use client";
+
+import Image from "next/image";
+
+export function Footer() {
+  return (
+    <footer className="bg-[#111827] text-gray-300">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        <div className="grid md:grid-cols-4 gap-12 mb-12">
+          <div className="col-span-2">
+            <div className="flex items-center gap-2 mb-4">
+              <div className="w-10 h-10 rounded-lg flex items-center justify-center">
+                <Image
+                  src="/icons/Icons/logoquadrada.png"
+                  alt="Logo"
+                  width={40}
+                  height={40}
+                />
+              </div>
+              <span className="text-xl font-bold text-white">
+                JP Mídia Indoor
+              </span>
+            </div>
+
+            <p className="text-gray-400 leading-relaxed max-w-md">
+              A plataforma completa para gestão de telas digitais em ambientes
+              comerciais. Tecnologia confiável, controle total e automação para
+              elevar o padrão da sua comunicação.
+            </p>
+          </div>
+
+          <div>
+            <h3 className="text-white font-semibold mb-4">Produto</h3>
+            <ul className="space-y-3">
+              <li>
+                <a
+                  href="#features"
+                  className="hover:text-white transition-colors"
+                >
+                  Funcionalidades
+                </a>
+              </li>
+              <li>
+                <a
+                  href="#pricing"
+                  className="hover:text-white transition-colors"
+                >
+                  Planos e Preços
+                </a>
+              </li>
+              <li>
+                <a href="#" className="hover:text-white transition-colors">
+                  Demonstração
+                </a>
+              </li>
+              <li>
+                <a href="#" className="hover:text-white transition-colors">
+                  Documentação da API
+                </a>
+              </li>
+            </ul>
+          </div>
+
+          <div>
+            <h3 className="text-white font-semibold mb-4">Empresa</h3>
+            <ul className="space-y-3">
+              <li>
+                <a href="#" className="hover:text-white transition-colors">
+                  Sobre Nós
+                </a>
+              </li>
+              <li>
+                <a href="#" className="hover:text-white transition-colors">
+                  Blog & Notícias
+                </a>
+              </li>
+              <li>
+                <a href="#" className="hover:text-white transition-colors">
+                  Contato
+                </a>
+              </li>
+              <li>
+                <a href="#" className="hover:text-white transition-colors">
+                  Central de Suporte
+                </a>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <div className="pt-8 border-t border-gray-800 flex flex-col sm:flex-row justify-between items-center gap-4">
+          <p className="text-gray-400 text-sm">
+            © 2025 JP Mídia Indoor. Todos os direitos reservados.
+          </p>
+
+          <div className="flex gap-6 text-sm">
+            <a href="#" className="hover:text-white transition-colors">
+              Política de Privacidade
+            </a>
+            <a href="#" className="hover:text-white transition-colors">
+              Termos de Uso
+            </a>
+            <a href="#" className="hover:text-white transition-colors">
+              Política de Cookies
+            </a>
+          </div>
+        </div>
+      </div>
+    </footer>
+  );
+}
