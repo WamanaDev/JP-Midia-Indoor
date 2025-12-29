@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 
 export default function TermsOfServicePage() {
   return (
@@ -9,12 +10,14 @@ export default function TermsOfServicePage() {
         {/* Logo */}
         <div className="flex justify-center mb-8">
           <div className="bg-white p-2 rounded-lg">
-            <Image
-              src="/icons/Icons/logoquadrada2.png"
-              alt="JP Dash"
-              width={64}
-              height={64}
-            />
+            <Link href="/">
+              <Image
+                src="/icons/Icons/logoquadrada2.png"
+                alt="JP Dash"
+                width={64}
+                height={64}
+              />
+            </Link>
           </div>
         </div>
 

@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 
 export function Footer() {
   return (
@@ -10,12 +11,14 @@ export function Footer() {
           <div className="col-span-2">
             <div className="flex items-center gap-2 mb-4">
               <div className="w-10 h-10 rounded-lg flex items-center justify-center">
-                <Image
-                  src="/icons/Icons/logoquadrada.png"
-                  alt="Logo"
-                  width={40}
-                  height={40}
-                />
+                <Link href="/">
+                  <Image
+                    src="/icons/Icons/logoquadrada.png"
+                    alt="Logo"
+                    width={40}
+                    height={40}
+                  />
+                </Link>
               </div>
               <span className="text-xl font-bold text-white">
                 JP Mídia Indoor
@@ -94,15 +97,24 @@ export function Footer() {
           </p>
 
           <div className="flex gap-6 text-sm">
-            <a href="#" className="hover:text-white transition-colors">
+            <Link
+              href="/privacy-policy"
+              className="hover:text-white transition-colors"
+            >
               Política de Privacidade
-            </a>
-            <a href="#" className="hover:text-white transition-colors">
-              Termos de Uso
-            </a>
-            <a href="#" className="hover:text-white transition-colors">
+            </Link>
+            <Link
+              href="/terms-of-service"
+              className="hover:text-white transition-colors"
+            >
+              Termos de Serviço
+            </Link>
+            <Link
+              href="/cookies-policy"
+              className="hover:text-white transition-colors"
+            >
               Política de Cookies
-            </a>
+            </Link>
           </div>
         </div>
       </div>
