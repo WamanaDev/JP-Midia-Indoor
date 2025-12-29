@@ -5,7 +5,7 @@ import {
   toggleClientAction,
   deleteClientAction,
 } from "@/app/dashboard/clients/actions";
-import { Client } from "@/interfaces/clients";
+import { Client } from "@/interfaces/Clients";
 
 interface Props {
   client: Client;

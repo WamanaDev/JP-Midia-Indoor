@@ -65,7 +65,7 @@ export function About() {
           <div className="relative">
             <div className="grid grid-cols-2 gap-6">
               <div className="space-y-6">
-                <div className="bg-gradient-to-br from-[#1E3A8A] to-[#3B82F6] rounded-2xl p-8 text-white">
+                <div className="bg-linear-to-br from-[#1E3A8A] to-[#3B82F6] rounded-2xl p-8 text-white">
                   <Smartphone className="w-12 h-12 mb-4 opacity-80" />
                   <h4 className="text-xl font-semibold mb-2">Controle Total</h4>
                   <p className="text-gray-200">
@@ -97,7 +97,7 @@ export function About() {
                   </p>
                 </div>
 
-                <div className="bg-gradient-to-br from-[#10B981] to-[#059669] rounded-2xl p-8 text-white">
+                <div className="bg-linear-to-br from-[#10B981] to-[#059669] rounded-2xl p-8 text-white">
                   <div className="text-4xl font-bold mb-2">24/7</div>
                   <p className="text-gray-100">
                     Monitoramento contínuo das telas

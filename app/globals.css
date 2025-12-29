@@ -1,16 +1,56 @@
 @import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+@keyframes time-fade {
+  0% {
+    opacity: 0;
+    transform: translateY(8px) scale(0.96);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
-.dark {
-  --background: #0a0a0a;
-  --foreground: #ededed;
+@keyframes time-pulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.08);
+  }
+  100% {
+    transform: scale(1);
+  }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
+@keyframes time-flip {
+  0% {
+    transform: rotateX(90deg);
+    opacity: 0;
+  }
+  100% {
+    transform: rotateX(0deg);
+    opacity: 1;
+  }
+}
+
+@keyframes analog-tick {
+  from {
+    transform: rotate(var(--from));
+  }
+  to {
+    transform: rotate(var(--to));
+  }
+}
+
+@keyframes overlay-fade {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }

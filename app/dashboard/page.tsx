@@ -1,5 +1,5 @@
 import DashboardClient from "@/components/dashboard/DashboardClient";
-import { Screen } from "@/interfaces/screen";
+import { Screen } from "@/interfaces/Screens";
 import { createClient } from "@/utils/supabase/server";
 import { redirect } from "next/navigation";
 

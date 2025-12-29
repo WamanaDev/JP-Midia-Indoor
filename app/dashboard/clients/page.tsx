@@ -9,7 +9,7 @@ export default async function ClientsPage() {
   } = await supabase.auth.getSession();
 
   if (!session?.user) {
-    redirect("/login");
+    redirect("/auth/signin");
   }
 
   const [clients] = await Promise.all([

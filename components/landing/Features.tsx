@@ -59,7 +59,7 @@ export function Features() {
               key={index}
               className="bg-white rounded-xl p-8 shadow-sm hover:shadow-lg transition-all duration-300 border border-gray-200 hover:border-[#3B82F6] group"
             >
-              <div className="w-14 h-14 bg-gradient-to-br from-[#1E3A8A] to-[#3B82F6] rounded-lg flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+              <div className="w-14 h-14 bg-linear-to-br from-[#1E3A8A] to-[#3B82F6] rounded-lg flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
                 <feature.icon className="w-7 h-7 text-white" />
               </div>
 

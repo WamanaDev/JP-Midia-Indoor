@@ -3,8 +3,8 @@
 import { useState } from "react";
 import { ClientCard } from "./ClientCard";
 import { Plus, Users } from "lucide-react";
-import { Client } from "@/interfaces/clients";
 import { FormClient } from "./FormClient";
+import { Client } from "@/interfaces/Clients";
 
 interface Props {
   clients: Client[] | null;

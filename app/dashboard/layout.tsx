@@ -1,32 +1,27 @@
-import { Sidebar } from "@/components/dashboard/SideBar";
 import { createClient } from "@/utils/supabase/server";
 import { redirect } from "next/navigation";
-import { ReactNode } from "react";
-import { ThemeProvider as NextThemeProvider } from "next-themes";
-
-interface DashboardLayoutProps {
-  children: ReactNode;
-}
+import { DashboardShell } from "./DashboardShell";
+import { PlayerProvider } from "@/context/PlayerContext";
+import { PlayerOverlay } from "@/components/preview/player";
 
 export default async function DashboardLayout({
   children,
-}: DashboardLayoutProps) {
+}: {
+  children: React.ReactNode;
+}) {
   const supabase = await createClient();
-
   const {
-    data: { session },
-  } = await supabase.auth.getSession();
+    data: { user },
+  } = await supabase.auth.getUser();
 
-  if (!session?.user) {
-    redirect("/auth/signin");
-  }
+  if (!user) redirect("/");
 
   return (
-    <div className="flex h-screen bg-[#F3F4F6] dark:bg-[#111827]">
-      <Sidebar />
-      <main className="flex-1 overflow-auto">
-        <div className="max-w-7xl mx-auto p-8">{children}</div>
-      </main>
-    </div>
+    <>
+      <PlayerProvider>
+        <DashboardShell>{children}</DashboardShell>
+        <PlayerOverlay />
+      </PlayerProvider>
+    </>
   );
 }
