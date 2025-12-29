@@ -108,7 +108,7 @@ export function MediaCard({ media, onPreview }: Props) {
           url ? (
             <Image
               src={url}
-              className="w-full h-full object-cover z-90"
+              className="w-full h-full object-cover"
               fill
               alt={url}
             />
