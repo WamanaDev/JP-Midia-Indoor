@@ -47,7 +47,7 @@ export function parseRSSNormalized(xml: string, source: string): NewsItem[] {
   const rawItems = Array.isArray(channel.item) ? channel.item : [channel.item];
 
   return rawItems
-    .map((item: any) => {
+    .map((item: any): NewsItem => {
       const media =
         item["media:content"] || item.media?.content || item.mediaContent;
 
@@ -69,5 +69,5 @@ export function parseRSSNormalized(xml: string, source: string): NewsItem[] {
         image,
       };
     })
-    .filter((i) => i.title && i.link);
+    .filter((i: NewsItem) => i.title && i.link);
 }

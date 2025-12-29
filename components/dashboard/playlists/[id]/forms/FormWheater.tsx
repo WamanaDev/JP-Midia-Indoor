@@ -102,6 +102,12 @@ const STYLES = [
   },
 ];
 
+type WeatherLocation = {
+  id: string;
+  label: string;
+  city: string;
+};
+
 // api/weather/cities.ts
 export const CITIES: Record<string, { lat: number; lon: number }> = {
   // ===== BRASIL =====
@@ -163,7 +169,13 @@ const WEATHER_LOCATIONS = Object.keys(CITIES).map((city) => ({
 }));
 
 export function WeatherForm({ value, onChange }: MediaFormProps) {
-  const config = {
+  const config: {
+    overlay: boolean;
+    position: string;
+    style: string;
+    layout: string;
+    locations: WeatherLocation[];
+  } = {
     overlay: false,
     position: "",
     style: "minimal",
@@ -182,7 +194,7 @@ export function WeatherForm({ value, onChange }: MediaFormProps) {
     });
   };
 
-  const updateLocation = (index: number, partial: any) => {
+  const updateLocation = (index: number, partial: Partial<WeatherLocation>) => {
     const updated = [...config.locations];
     updated[index] = { ...updated[index], ...partial };
     updateConfig({ locations: updated });
@@ -337,7 +349,7 @@ export function WeatherForm({ value, onChange }: MediaFormProps) {
                 onClick={() =>
                   updateConfig({
                     locations: config.locations.filter(
-                      (l: any) => l.id !== loc.id
+                      (l: Partial<WeatherLocation>) => l.id !== loc.id
                     ),
                   })
                 }

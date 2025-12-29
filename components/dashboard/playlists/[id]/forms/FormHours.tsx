@@ -143,8 +143,21 @@ const TIMEZONES = [
   { id: "Asia/Tokyo", label: "Tóquio" },
 ];
 
+type ClockConfig = {
+  id: string;
+  label: string;
+  timezone: string;
+  format: string;
+};
+
 export function TimeForm({ value, onChange }: MediaFormProps) {
-  const config = {
+  const config: {
+    overlay: boolean;
+    position: string;
+    style: string;
+    layout: string;
+    clocks: ClockConfig[];
+  } = {
     overlay: false,
     position: "",
     style: "minimal",
@@ -163,7 +176,7 @@ export function TimeForm({ value, onChange }: MediaFormProps) {
     });
   };
 
-  const updateClock = (index: number, partial: any) => {
+  const updateClock = (index: number, partial: Partial<ClockConfig>) => {
     const updated = [...config.clocks];
     updated[index] = { ...updated[index], ...partial };
     updateConfig({ clocks: updated });
@@ -341,7 +354,9 @@ export function TimeForm({ value, onChange }: MediaFormProps) {
                 type="button"
                 onClick={() =>
                   updateConfig({
-                    clocks: config.clocks.filter((c: any) => c.id !== clock.id),
+                    clocks: config.clocks.filter(
+                      (c: Partial<ClockConfig>) => c.id !== clock.id
+                    ),
                   })
                 }
                 className="ml-3 text-red-500"
