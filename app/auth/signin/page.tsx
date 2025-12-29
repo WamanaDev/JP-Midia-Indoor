@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { LogIn, AlertCircle } from "lucide-react";
+import SocialAuth from "@/components/auth/SocialLogin";
 
 export default function SignInPage() {
   const [email, setEmail] = useState("");
@@ -32,12 +33,13 @@ export default function SignInPage() {
       return;
     }
 
-    router.push("/dashboard"); // redireciona após login
+    router.push("/dashboard");
     setLoading(false);
   };
 
   return (
     <div className="text-black w-full max-w-md mx-auto bg-white rounded-2xl shadow-xl p-8">
+      {/* Header */}
       <div className="text-center mb-8">
         <div className="w-16 h-16 bg-linear-to-br from-[#1E3A8A] to-[#3B82F6] rounded-xl flex items-center justify-center mx-auto mb-4">
           <LogIn className="w-8 h-8 text-white" />
@@ -46,6 +48,7 @@ export default function SignInPage() {
         <p className="text-gray-600 mt-2">Entre na sua conta</p>
       </div>
 
+      {/* Erro */}
       {error && (
         <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg flex items-start gap-3">
           <AlertCircle className="w-5 h-5 text-red-600 shrink-0 mt-0.5" />
@@ -53,6 +56,7 @@ export default function SignInPage() {
         </div>
       )}
 
+      {/* Form */}
       <form onSubmit={handleSubmit} className="space-y-6">
         <div>
           <label
@@ -98,6 +102,8 @@ export default function SignInPage() {
           {loading ? "Entrando..." : "Entrar"}
         </button>
       </form>
+
+      {/* Forgot password */}
       <div className="mt-2 text-right">
         <Link
           href="/auth/forgot-password"
@@ -106,6 +112,18 @@ export default function SignInPage() {
           Esqueci minha senha
         </Link>
       </div>
+
+      {/* Divider */}
+      <div className="my-6 flex items-center gap-4">
+        <div className="flex-1 h-px bg-gray-200" />
+        <span className="text-sm text-gray-400">ou</span>
+        <div className="flex-1 h-px bg-gray-200" />
+      </div>
+
+      {/* OAuth */}
+      <SocialAuth />
+
+      {/* Signup */}
       <div className="mt-6 text-center">
         <Link
           href="/auth/signup"
