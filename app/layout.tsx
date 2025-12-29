@@ -42,6 +42,9 @@ export const metadata: Metadata = {
       "Tecnologia, dados e automação em uma identidade visual moderna e intuitiva.",
     images: ["https://jpmidia.com/og-image.jpg"],
   },
+  verification: {
+    google: "i_nZnDoIDM9dnl3zcFozhbTg9-y3Q8_CR-blejQYWAk",
+  },
   icons: {
     icon: [
       { url: "/icons/favicos/favico16x16.png", sizes: "16x16" },
