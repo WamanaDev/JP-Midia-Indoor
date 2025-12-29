@@ -1,11 +1,11 @@
 "use client";
 
+import { Client } from "@/interfaces/Clients";
 import { CheckCircle, XCircle, Edit2, Trash2 } from "lucide-react";
 import {
   toggleClientAction,
   deleteClientAction,
 } from "@/app/dashboard/clients/actions";
-import { Client } from "@/interfaces/Clients";
 
 interface Props {
   client: Client;
