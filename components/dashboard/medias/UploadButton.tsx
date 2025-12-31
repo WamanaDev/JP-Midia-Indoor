@@ -1,38 +1,81 @@
 "use client";
 
-import { useState } from "react";
-import { Plus } from "lucide-react";
-import { uploadMediaAction } from "@/app/dashboard/medias/actions";
-import { generateVideoThumbnail } from "@/utils/generateVideoThumbnail";
+import { LimitReachedModal } from "@/components/dashboard/LimitReachedModal";
+import { useCheckLimits } from "@/hooks/useCheckLimits";
+import { createClient } from "@/utils/supabase/client";
+import { AlertCircle, Upload } from "lucide-react";
+import { useRef, useState } from "react";
 
 export default function UploadButton() {
   const [uploading, setUploading] = useState(false);
+  const [showLimitModal, setShowLimitModal] = useState(false);
+  const [usageData, setUsageData] = useState<any>(null);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleFileChange = async (
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const { checkStorageLimit, getUserUsage } = useCheckLimits();
+
+  const handleFileSelect = async (
     event: React.ChangeEvent<HTMLInputElement>
   ) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    setUploading(true);
+    setError(null);
 
+    // Verificar se pode fazer upload
+    const canUpload = await checkStorageLimit(file.size);
+
+    if (!canUpload) {
+      // Buscar dados de uso para mostrar no modal
+      const usage = await getUserUsage();
+      setUsageData(usage);
+      setShowLimitModal(true);
+
+      // Limpar o input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+      return;
+    }
+
+    // Se pode fazer upload, prosseguir
+    await uploadFile(file);
+  };
+
+  const uploadFile = async (file: File) => {
     try {
-      const formData = new FormData();
-      formData.append("file", file);
+      setUploading(true);
+      const supabase = createClient();
 
-      // 🎥 Gerar thumbnail só se for vídeo
-      if (file.type.startsWith("video/")) {
-        const thumbBlob = await generateVideoThumbnail(file);
-        formData.append("thumbnail", thumbBlob, `thumb-${file.name}.jpg`);
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) throw new Error("Usuário não autenticado");
+
+      // Gerar nome único para o arquivo
+      const fileExt = file.name.split(".").pop();
+      const fileName = `${user.id}/${Date.now()}.${fileExt}`;
+
+      // Upload para o Supabase Storage
+      const { error: uploadError } = await supabase.storage
+        .from("screens")
+        .upload(fileName, file);
+
+      if (uploadError) throw uploadError;
+
+      console.log("✅ Upload realizado com sucesso!");
+
+      // Limpar o input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
       }
 
-      const result = await uploadMediaAction(formData);
-      console.log("Upload concluído:", result);
-      alert("Upload feito com sucesso!");
-    } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : "Erro desconhecido";
-      console.error(message);
-      alert("Erro ao enviar arquivo: " + message);
+      // Recarregar a página
+      window.location.reload();
+    } catch (err: any) {
+      console.error("❌ Erro no upload:", err);
+      setError(err.message);
     } finally {
       setUploading(false);
     }
@@ -41,20 +84,52 @@ export default function UploadButton() {
   return (
     <>
       <input
+        ref={fileInputRef}
         type="file"
-        id="file-upload"
+        onChange={handleFileSelect}
+        disabled={uploading}
         className="hidden"
-        onChange={handleFileChange}
-        accept="video/*,image/*"
+        id="file-upload"
+        accept="image/*,video/*"
       />
 
       <label
         htmlFor="file-upload"
-        className="cursor-pointer flex items-center gap-2 px-5 py-3 bg-blue-600 text-white rounded-lg"
+        className={`cursor-pointer flex items-center gap-2 px-5 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors ${
+          uploading ? "opacity-50 cursor-not-allowed" : ""
+        }`}
       >
-        <Plus className="w-5 h-5" />
-        {uploading ? "Enviando..." : "Upload"}
+        {uploading ? (
+          <>
+            <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+            Enviando...
+          </>
+        ) : (
+          <>
+            <Upload className="w-5 h-5" />
+            Upload de Mídia
+          </>
+        )}
       </label>
+
+      {/* Erro */}
+      {error && (
+        <div className="fixed bottom-4 right-4 flex items-start gap-3 p-4 bg-red-50 border border-red-200 rounded-lg shadow-lg max-w-md">
+          <AlertCircle className="w-5 h-5 text-red-600 shrink-0 mt-0.5" />
+          <p className="text-sm text-red-800">{error}</p>
+        </div>
+      )}
+
+      {/* Modal de Limite Atingido */}
+      {usageData && (
+        <LimitReachedModal
+          isOpen={showLimitModal}
+          onClose={() => setShowLimitModal(false)}
+          limitType="storage"
+          currentUsage={usageData.storage.current_gb}
+          maxUsage={usageData.storage.max_gb}
+        />
+      )}
     </>
   );
 }

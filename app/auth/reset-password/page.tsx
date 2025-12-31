@@ -1,10 +1,10 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { translateAuthError } from "@/utils/supabase/auth-errors";
 import { createClient } from "@/utils/supabase/client"; // client browser
-import { Lock, AlertCircle, CheckCircle } from "lucide-react";
-import { translateAuthError } from "@/utils/supabase/auth-erros";
+import { AlertCircle, CheckCircle, Lock } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 
 export default function ResetPasswordPage() {
   const [password, setPassword] = useState("");

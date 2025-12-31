@@ -1,6 +1,6 @@
 "use client";
 
-import { Monitor, Play, Tv, TrendingUp } from "lucide-react";
+import { Monitor, Play, TrendingUp, Tv } from "lucide-react";
 
 interface Stats {
   totalPlaylists: number;
@@ -23,10 +23,7 @@ interface DashboardClientProps {
   recentLogs: Log[];
 }
 
-export default function DashboardClient({
-  stats,
-  recentLogs,
-}: DashboardClientProps) {
+export function DashboardClient({ stats, recentLogs }: DashboardClientProps) {
   const statCards = [
     {
       icon: Monitor,

@@ -1,4 +1,4 @@
-import { supabaseAdmin as supabase } from "@/lib/supabase.admin";
+import { supabaseAdmin as supabase } from "@/lib/supabase-admin";
 
 export interface CreateClientDTO {
   name: string;
