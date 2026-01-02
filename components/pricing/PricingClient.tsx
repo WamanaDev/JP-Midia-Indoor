@@ -141,13 +141,17 @@ export function PricingClient({
 
           {/* Price */}
           <div className="mb-6">
-            {plan.price !== null ? (
+            {plan.price !== 0 && plan.price !== null ? (
               <div className="flex items-baseline justify-center gap-2">
                 <span className="text-5xl font-bold text-[#111827] dark:text-white">
                   R$ {plan.price}
                 </span>
                 <span className="text-gray-500 dark:text-gray-400">/mês</span>
               </div>
+            ) : plan.price === null ? (
+              <span className="text-5xl font-bold text-[#111827] dark:text-white">
+                Personalizado
+              </span>
             ) : (
               <span className="text-5xl font-bold text-[#111827] dark:text-white">
                 Grátis
