@@ -10,7 +10,7 @@ export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
 });
 
 // Configurações de trial (período de teste)
-export const TRIAL_PERIOD_DAYS = 14; // 14 dias de teste grátis
+export const TRIAL_PERIOD_DAYS = 7; // 7 dias de teste grátis
 
 // Mapeamento de planos para Stripe Price IDs
 // IMPORTANTE: Estes IDs serão preenchidos após criar os produtos no Stripe

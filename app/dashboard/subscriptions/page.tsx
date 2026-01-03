@@ -1,4 +1,5 @@
 import { SubscriptionClient } from "@/components/dashboard/subscriptions/SubscriptionClient";
+import { stripe } from "@/lib/stripe";
 import { createClient } from "@/utils/supabase/server";
 import { redirect } from "next/navigation";
 
@@ -13,19 +14,68 @@ export default async function SubscriptionsPage() {
     redirect("/auth/signin");
   }
 
-  // Buscar perfil com plano
+  // Buscar perfil
   const { data: profile } = await supabase
     .from("profiles")
     .select("*, plan:plans(*)")
     .eq("id", user.id)
     .single();
 
-  // Buscar subscription ativa
+  // Buscar subscription
   const { data: subscription } = await supabase
     .from("subscriptions")
     .select("*")
     .eq("user_id", user.id)
+    .order("created_at", { ascending: false })
+    .limit(1)
     .single();
 
-  return <SubscriptionClient profile={profile} subscription={subscription} />;
+  // ✅ Sincronizar automaticamente com o Stripe
+  if (subscription?.stripe_subscription_id) {
+    try {
+      const stripeSubscriptionResponse = await stripe.subscriptions.retrieve(
+        subscription.stripe_subscription_id
+      );
+      const stripeSubscription = stripeSubscriptionResponse as any;
+
+      // Verificar se o status está diferente
+      if (stripeSubscription.status !== subscription.status) {
+        console.log("🔄 Sincronizando status da subscription...");
+        console.log("- Status no banco:", subscription.status);
+        console.log("- Status no Stripe:", stripeSubscription.status);
+
+        // Atualizar banco com dados do Stripe
+        const currentPeriodEnd = stripeSubscription.current_period_end
+          ? new Date(stripeSubscription.current_period_end * 1000).toISOString()
+          : null;
+
+        await supabase
+          .from("subscriptions")
+          .update({
+            status: stripeSubscription.status,
+            current_period_end: currentPeriodEnd,
+            cancel_at_period_end:
+              stripeSubscription.cancel_at_period_end || false,
+          })
+          .eq("id", subscription.id);
+
+        console.log("✅ Subscription sincronizada automaticamente!");
+
+        // Atualizar a variável local
+        subscription.status = stripeSubscription.status;
+        subscription.current_period_end = currentPeriodEnd;
+        subscription.cancel_at_period_end =
+          stripeSubscription.cancel_at_period_end || false;
+      }
+    } catch (error) {
+      console.error("❌ Erro ao sincronizar subscription:", error);
+      // Não bloquear a página se a sincronização falhar
+    }
+  }
+
+  return (
+    <div className="max-w-6xl mx-auto py-8 px-4">
+      <SubscriptionClient profile={profile} subscription={subscription} />
+    </div>
+  );
 }

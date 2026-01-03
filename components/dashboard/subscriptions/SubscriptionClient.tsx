@@ -5,11 +5,14 @@ import {
   AlertCircle,
   Calendar,
   CheckCircle,
-  CreditCard,
   DollarSign,
   Download,
+  Loader2,
+  Plus,
   RefreshCw,
   Shield,
+  Star,
+  Trash2,
   TrendingUp,
   XCircle,
   Zap,
@@ -47,12 +50,12 @@ interface Invoice {
 }
 
 interface PaymentMethod {
-  card: {
-    brand: string;
-    last4: string;
-    exp_month: number;
-    exp_year: number;
-  };
+  id: string;
+  brand: string;
+  last4: string;
+  exp_month: number;
+  exp_year: number;
+  isDefault: boolean;
 }
 
 interface SubscriptionClientProps {
@@ -67,15 +70,15 @@ export function SubscriptionClient({
   const [loading, setLoading] = useState(false);
   const [cancelLoading, setCancelLoading] = useState(false);
   const [invoices, setInvoices] = useState<Invoice[]>([]);
-  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod | null>(
-    null
-  );
+  const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
   const [loadingData, setLoadingData] = useState(true);
+  const [removingCardId, setRemovingCardId] = useState<string | null>(null);
+  const [settingDefaultId, setSettingDefaultId] = useState<string | null>(null);
   const router = useRouter();
 
   const currentPlan = profile?.plan;
 
-  // Buscar faturas e método de pagamento
+  // Buscar faturas e métodos de pagamento
   useEffect(() => {
     if (subscription?.stripe_subscription_id) {
       fetchBillingData();
@@ -85,13 +88,24 @@ export function SubscriptionClient({
   }, [subscription]);
 
   const fetchBillingData = async () => {
+    setLoadingData(true);
     try {
-      const response = await fetch("/api/stripe/get-billing-data");
-      const data = await response.json();
+      // Buscar faturas
+      const invoicesResponse = await fetch("/api/stripe/get-billing-data");
+      const invoicesData = await invoicesResponse.json();
 
-      if (response.ok) {
-        setInvoices(data.invoices || []);
-        setPaymentMethod(data.paymentMethod || null);
+      if (invoicesResponse.ok) {
+        setInvoices(invoicesData.invoices || []);
+      }
+
+      // Buscar métodos de pagamento
+      const paymentMethodsResponse = await fetch(
+        "/api/stripe/get-payment-methods"
+      );
+      const paymentMethodsData = await paymentMethodsResponse.json();
+
+      if (paymentMethodsResponse.ok) {
+        setPaymentMethods(paymentMethodsData.paymentMethods || []);
       }
     } catch (error) {
       console.error("Erro ao buscar dados de cobrança:", error);
@@ -121,6 +135,64 @@ export function SubscriptionClient({
     } catch (error: any) {
       alert(error.message);
       setLoading(false);
+    }
+  };
+
+  const handleRemoveCard = async (paymentMethodId: string) => {
+    if (!confirm("Tem certeza que deseja remover este cartão?")) {
+      return;
+    }
+
+    setRemovingCardId(paymentMethodId);
+
+    try {
+      const response = await fetch("/api/stripe/remove-payment-method", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ paymentMethodId }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Erro ao remover cartão");
+      }
+
+      alert("Cartão removido com sucesso!");
+      await fetchBillingData(); // Atualizar lista
+    } catch (error: any) {
+      alert(error.message);
+    } finally {
+      setRemovingCardId(null);
+    }
+  };
+
+  const handleSetDefaultCard = async (paymentMethodId: string) => {
+    setSettingDefaultId(paymentMethodId);
+
+    try {
+      const response = await fetch("/api/stripe/set-default-payment-method", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ paymentMethodId }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Erro ao definir cartão padrão");
+      }
+
+      alert("Cartão padrão definido com sucesso!");
+      await fetchBillingData(); // Atualizar lista
+    } catch (error: any) {
+      alert(error.message);
+    } finally {
+      setSettingDefaultId(null);
     }
   };
 
@@ -268,6 +340,10 @@ export function SubscriptionClient({
     return brands[brand.toLowerCase()] || brand;
   };
 
+  const getBrandIcon = (brand: string) => {
+    return "💳";
+  };
+
   return (
     <div className="space-y-8">
       {/* Header */}
@@ -374,53 +450,110 @@ export function SubscriptionClient({
         )}
       </div>
 
-      {/* Método de Pagamento */}
+      {/* Métodos de Pagamento */}
       {subscription && currentPlan?.price !== null && (
         <div className="bg-white dark:bg-[#1F2937] rounded-xl p-6 border border-gray-200 dark:border-gray-700 shadow-sm">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-xl font-bold text-[#111827] dark:text-white">
-              Método de Pagamento
+              Métodos de Pagamento
             </h3>
-            <button
-              onClick={fetchBillingData}
-              disabled={loadingData}
-              className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors disabled:opacity-50"
-              title="Atualizar dados"
-            >
-              <RefreshCw
-                className={`w-5 h-5 ${loadingData ? "animate-spin" : ""}`}
-              />
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={fetchBillingData}
+                disabled={loadingData}
+                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors disabled:opacity-50"
+                title="Atualizar dados"
+              >
+                <RefreshCw
+                  className={`w-5 h-5 ${loadingData ? "animate-spin" : ""}`}
+                />
+              </button>
+              <button
+                onClick={handleUpdatePaymentMethod}
+                disabled={loading}
+                className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-semibold disabled:opacity-50"
+              >
+                <Plus className="w-4 h-4" />
+                Adicionar Cartão
+              </button>
+            </div>
           </div>
 
           {loadingData ? (
             <div className="flex items-center justify-center py-8">
               <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
             </div>
-          ) : paymentMethod?.card ? (
-            <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-linear-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center">
-                  <CreditCard className="w-6 h-6 text-white" />
+          ) : paymentMethods.length > 0 ? (
+            <div className="space-y-3">
+              {paymentMethods.map((method) => (
+                <div
+                  key={method.id}
+                  className="bg-white dark:bg-[#1F2937] rounded-xl p-4 border border-gray-200 dark:border-gray-700 flex items-center justify-between"
+                >
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 bg-linear-to-r from-blue-500 to-blue-600 rounded-lg flex items-center justify-center text-2xl">
+                      {getBrandIcon(method.brand)}
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <p className="font-semibold text-[#111827] dark:text-white capitalize">
+                          {getCardBrandName(method.brand)} •••• {method.last4}
+                        </p>
+                        {method.isDefault && (
+                          <span className="px-2 py-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 text-xs font-semibold rounded flex items-center gap-1">
+                            <Star className="w-3 h-3 fill-current" />
+                            Padrão
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                        Expira em {method.exp_month.toString().padStart(2, "0")}
+                        /{method.exp_year}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Ações do cartão */}
+                  <div className="flex items-center gap-2">
+                    {!method.isDefault && (
+                      <button
+                        onClick={() => handleSetDefaultCard(method.id)}
+                        disabled={settingDefaultId === method.id}
+                        className="px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors font-semibold disabled:opacity-50 flex items-center gap-2"
+                        title="Definir como padrão"
+                      >
+                        {settingDefaultId === method.id ? (
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                        ) : (
+                          <Star className="w-4 h-4" />
+                        )}
+                        Definir Padrão
+                      </button>
+                    )}
+
+                    <button
+                      onClick={() => handleRemoveCard(method.id)}
+                      disabled={
+                        removingCardId === method.id ||
+                        (method.isDefault && paymentMethods.length === 1)
+                      }
+                      className="px-3 py-2 text-sm border border-red-300 dark:border-red-600 text-red-700 dark:text-red-400 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors font-semibold disabled:opacity-50 flex items-center gap-2"
+                      title={
+                        method.isDefault && paymentMethods.length === 1
+                          ? "Não é possível remover o único cartão padrão"
+                          : "Remover cartão"
+                      }
+                    >
+                      {removingCardId === method.id ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      ) : (
+                        <Trash2 className="w-4 h-4" />
+                      )}
+                      Remover
+                    </button>
+                  </div>
                 </div>
-                <div>
-                  <p className="font-semibold text-[#111827] dark:text-white">
-                    {getCardBrandName(paymentMethod.card.brand)} ••••{" "}
-                    {paymentMethod.card.last4}
-                  </p>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">
-                    Expira em {paymentMethod.card.exp_month}/
-                    {paymentMethod.card.exp_year}
-                  </p>
-                </div>
-              </div>
-              <button
-                onClick={handleUpdatePaymentMethod}
-                disabled={loading}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 font-semibold"
-              >
-                {loading ? "Carregando..." : "Atualizar Cartão"}
-              </button>
+              ))}
             </div>
           ) : (
             <div className="text-center py-8">

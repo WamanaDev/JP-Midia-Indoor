@@ -55,20 +55,32 @@ export function ChangePlanModal({
 
       const data = await response.json();
 
+      console.log("📦 Resposta da API no modal:", data);
+
       if (!response.ok) {
         throw new Error(data.error || "Erro ao trocar de plano");
       }
 
-      // Se precisar redirecionar para checkout
-      if (data.redirect && data.url) {
-        router.push(data.url);
+      // Se retornou URL, redirecionar para checkout do Stripe
+      if (data.url) {
+        console.log("✅ Redirecionando para Stripe Checkout:", data.url);
+        window.location.href = data.url;
         return;
       }
 
-      // Sucesso - recarregar página
+      // Se não tem URL, foi uma mudança de plano sem checkout (ex: downgrade)
+      if (data.success) {
+        console.log("✅ Plano alterado com sucesso, recarregando página");
+        router.refresh();
+        onClose();
+        return;
+      }
+
+      // Caso padrão: recarregar página
       router.refresh();
       onClose();
     } catch (err: any) {
+      console.error("❌ Erro ao confirmar mudança de plano:", err);
       setError(err.message);
       setLoading(false);
     }

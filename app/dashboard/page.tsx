@@ -16,6 +16,8 @@ interface UsageData {
     unlimited: boolean;
     percentage: number;
   };
+  is_past_due?: boolean;
+  subscription_status?: string;
 }
 
 export default async function DashboardPage() {
@@ -30,17 +32,31 @@ export default async function DashboardPage() {
   }
 
   // Buscar estatísticas
-  const [playlists, medias, screens, logs] = await Promise.all([
-    supabase.from("playlists").select("id").eq("user_id", user.id),
-    supabase.from("medias").select("id").eq("user_id", user.id),
-    supabase.from("screens").select("id, is_online").eq("user_id", user.id),
-    supabase
-      .from("logs")
-      .select("*")
-      .eq("user_id", user.id)
-      .order("created_at", { ascending: false })
-      .limit(10),
-  ]);
+  const [playlists, medias, screens, logs, profile, subscriptions] =
+    await Promise.all([
+      supabase.from("playlists").select("id").eq("user_id", user.id),
+      supabase.from("media_files").select("id").eq("user_id", user.id),
+      supabase.from("screens").select("id, is_online").eq("user_id", user.id),
+      supabase
+        .from("activity_logs")
+        .select("*")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false })
+        .limit(10),
+      supabase
+        .from("profiles")
+        .select("bytes_usage, plan_id, plans(*)")
+        .eq("id", user.id)
+        .single(),
+      // ✅ Buscar a subscription mais recente (ordenar por created_at)
+      supabase
+        .from("subscriptions")
+        .select("*")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .single(),
+    ]);
 
   const stats = {
     totalPlaylists: playlists.data?.length || 0,
@@ -49,19 +65,53 @@ export default async function DashboardPage() {
     activeScreens: screens.data?.filter((s) => s.is_online).length || 0,
   };
 
-  // Buscar dados de uso
+  // ✅ Calcular dados de uso
   let usage: UsageData | null = null;
 
-  try {
-    const { data: usageData, error } = await supabase.rpc("get_user_usage", {
-      p_user_id: user.id,
-    });
+  if (profile.data) {
+    const plan = profile.data.plans as any;
+    const screensCount = screens.data?.length || 0;
+    const storageUsedBytes = profile.data.bytes_usage || 0;
+    const storageUsedGb = storageUsedBytes / (1024 * 1024 * 1024);
 
-    if (!error && usageData) {
-      usage = usageData as UsageData;
-    }
-  } catch (error) {
-    console.error("Erro ao buscar dados de uso:", error);
+    const maxScreens = plan?.max_screens || 1;
+    const maxStorageGb = plan?.storage_gb || 1;
+
+    const screensUnlimited = maxScreens === null;
+    const storageUnlimited = maxStorageGb === null;
+
+    const screensPercentage = screensUnlimited
+      ? 0
+      : (screensCount / maxScreens) * 100;
+
+    const storagePercentage = storageUnlimited
+      ? 0
+      : (storageUsedGb / maxStorageGb) * 100;
+
+    // ✅ Verificar se está past_due
+    const subscription = subscriptions.data;
+    const isPastDue = subscription?.status === "past_due";
+
+    console.log("📊 Subscription found:", subscription);
+    console.log("📊 Subscription status:", subscription?.status);
+    console.log("⚠️ Is past due?", isPastDue);
+
+    usage = {
+      screens: {
+        current: screensCount,
+        max: screensUnlimited ? null : maxScreens,
+        unlimited: screensUnlimited,
+        percentage: screensPercentage,
+      },
+      storage: {
+        current_gb: parseFloat(storageUsedGb.toFixed(2)),
+        max_gb: storageUnlimited ? null : maxStorageGb,
+        unlimited: storageUnlimited,
+        percentage: storagePercentage,
+      },
+      is_past_due: isPastDue,
+      subscription_status: subscription?.status || "none",
+    };
   }
 
   return (

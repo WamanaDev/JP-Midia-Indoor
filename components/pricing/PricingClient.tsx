@@ -3,7 +3,6 @@
 import { Plan } from "@/interfaces/Plan";
 import { ArrowRight, Check, X, Zap } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { ChangePlanModal } from "./ChangePlanModal";
 
@@ -21,42 +20,86 @@ export function PricingClient({
   const [loading, setLoading] = useState<string | null>(null);
   const [showChangePlanModal, setShowChangePlanModal] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<Plan | null>(null);
-  const router = useRouter();
 
   const handleSelectPlan = async (plan: Plan) => {
+    console.log("🎯 handleSelectPlan chamado:", {
+      planId: plan.id,
+      planName: plan.name,
+      currentPlanId: currentPlanId,
+    });
+
     // Se já está no plano, não fazer nada
-    if (plan.id === currentPlanId) return;
+    if (plan.id === currentPlanId) {
+      console.log("⚠️ Já está neste plano, abortando");
+      return;
+    }
+
+    // Se o plano selecionado é Free, não precisa de checkout
+    if (plan.price === null || plan.price === 0) {
+      console.log("⚠️ Plano gratuito selecionado");
+      // Se tem plano atual pago, mostrar modal de confirmação de downgrade
+      if (currentPlanId) {
+        const currentPlan = plans.find((p) => p.id === currentPlanId);
+        if (
+          currentPlan &&
+          currentPlan.price !== null &&
+          currentPlan.price > 0
+        ) {
+          console.log("📋 Abrindo modal de downgrade");
+          setSelectedPlan(plan);
+          setShowChangePlanModal(true);
+          return;
+        }
+      }
+      return;
+    }
 
     // Se tem plano atual, mostrar modal de confirmação
     if (currentPlanId) {
+      console.log("📋 Tem plano atual, abrindo modal de confirmação");
       setSelectedPlan(plan);
       setShowChangePlanModal(true);
       return;
     }
 
     // Se não tem plano atual, ir direto para checkout
+    console.log("🚀 Iniciando checkout direto (sem modal)");
     setLoading(plan.id);
 
     try {
-      const response = await fetch("/api/stripe/create-checkout-session", {
+      console.log("📡 Fazendo requisição para /api/stripe/change-plan");
+      const response = await fetch("/api/stripe/change-plan", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ plan_id: plan.id }),
+        body: JSON.stringify({ new_plan_id: plan.id }),
+      });
+
+      console.log("📡 Resposta recebida:", {
+        status: response.status,
+        ok: response.ok,
       });
 
       const data = await response.json();
+      console.log("📦 Dados da resposta:", data);
 
       if (!response.ok) {
+        console.error("❌ Resposta não OK:", data);
         throw new Error(data.error || "Erro ao criar sessão de checkout");
       }
 
       if (data.url) {
-        router.push(data.url);
+        console.log("✅ URL recebida, redirecionando para:", data.url);
+        console.log("🔄 Executando window.location.href...");
+        window.location.href = data.url;
+        console.log("✅ window.location.href executado");
+      } else {
+        console.error("❌ URL não retornada na resposta:", data);
+        throw new Error("URL de checkout não foi retornada");
       }
     } catch (error: any) {
-      console.error("Erro ao processar checkout:", error);
+      console.error("❌ Erro capturado no catch:", error);
       alert(error.message || "Erro ao processar checkout. Tente novamente.");
       setLoading(null);
     }
@@ -83,16 +126,49 @@ export function PricingClient({
   };
 
   const getButtonText = (plan: Plan) => {
-    if (plan.id === currentPlanId) return "Plano Atual";
-    if (currentPlanId && plan.price !== null) {
-      // Se tem plano atual e o novo é pago, é upgrade ou downgrade
-      const currentPlan = plans.find((p) => p.id === currentPlanId);
-      if (currentPlan) {
-        const isUpgrade = (plan.price || 0) > (currentPlan.price || 0);
-        return isUpgrade ? "Fazer Upgrade" : "Fazer Downgrade";
-      }
+    // Se é o plano atual
+    if (plan.id === currentPlanId) {
+      return "Plano Atual";
     }
-    if (plan.price === null) return "Começar Grátis";
+
+    // Se não tem plano atual
+    if (!currentPlanId) {
+      if (plan.price === null || plan.price === 0) return "Começar Grátis";
+      return "Assinar Agora";
+    }
+
+    // Se tem plano atual, verificar se é upgrade ou downgrade
+    const currentPlan = plans.find((p) => p.id === currentPlanId);
+
+    if (!currentPlan) {
+      if (plan.price === null || plan.price === 0) return "Começar Grátis";
+      return "Assinar Agora";
+    }
+
+    // Plano Free selecionado
+    if (plan.price === null || plan.price === 0) {
+      // Se o plano atual é pago, é downgrade para Free
+      if (currentPlan.price !== null && currentPlan.price > 0) {
+        return "Voltar ao Gratuito";
+      }
+      return "Plano Gratuito";
+    }
+
+    // Plano atual é Free
+    if (currentPlan.price === null || currentPlan.price === 0) {
+      return "Fazer Upgrade";
+    }
+
+    // Ambos são pagos, comparar valores
+    const currentPrice = currentPlan.price || 0;
+    const newPrice = plan.price || 0;
+
+    if (newPrice > currentPrice) {
+      return "Fazer Upgrade";
+    } else if (newPrice < currentPrice) {
+      return "Fazer Downgrade";
+    }
+
     return "Assinar Agora";
   };
 

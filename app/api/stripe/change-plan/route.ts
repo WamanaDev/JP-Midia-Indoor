@@ -1,6 +1,10 @@
-import { stripe } from "@/lib/stripe";
 import { createClient } from "@/utils/supabase/server";
 import { NextRequest, NextResponse } from "next/server";
+import Stripe from "stripe";
+
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+  apiVersion: "2025-12-15.clover",
+});
 
 export async function POST(request: NextRequest) {
   try {
@@ -9,13 +13,14 @@ export async function POST(request: NextRequest) {
     // Verificar autenticação
     const {
       data: { user },
-      error: authError,
+      error: userError,
     } = await supabase.auth.getUser();
 
-    if (authError || !user) {
+    if (userError || !user) {
       return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
     }
 
+    // Receber dados do body
     const { new_plan_id } = await request.json();
 
     if (!new_plan_id) {
@@ -25,7 +30,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Buscar profile do usuário
+    // Buscar plano atual do usuário
     const { data: profile, error: profileError } = await supabase
       .from("profiles")
       .select("plan_id")
@@ -39,21 +44,20 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Buscar plano atual
-    const { data: currentPlan } = await supabase
+    // Buscar detalhes dos planos
+    const { data: currentPlan, error: currentPlanError } = await supabase
       .from("plans")
       .select("*")
       .eq("id", profile.plan_id)
       .single();
 
-    // Buscar novo plano
-    const { data: newPlan, error: planError } = await supabase
+    const { data: newPlan, error: newPlanError } = await supabase
       .from("plans")
       .select("*")
       .eq("id", new_plan_id)
       .single();
 
-    if (planError || !newPlan) {
+    if (currentPlanError || newPlanError || !currentPlan || !newPlan) {
       return NextResponse.json(
         { error: "Plano não encontrado" },
         { status: 404 }
@@ -62,10 +66,10 @@ export async function POST(request: NextRequest) {
 
     console.log("📋 Planos:", {
       currentPlan: {
-        id: currentPlan?.id,
-        name: currentPlan?.name,
-        price: currentPlan?.price,
-        idStripe: currentPlan?.idStripe,
+        id: currentPlan.id,
+        name: currentPlan.name,
+        price: currentPlan.price,
+        idStripe: currentPlan.idStripe,
       },
       newPlan: {
         id: newPlan.id,
@@ -75,101 +79,150 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    // Verificar se já está nesse plano
-    if (profile.plan_id === new_plan_id) {
-      return NextResponse.json(
-        { error: "Você já está neste plano" },
-        { status: 400 }
-      );
-    }
-
     // Buscar subscription ativa
-    const { data: subscription } = await supabase
+    const { data: subscription, error: subError } = await supabase
       .from("subscriptions")
       .select("*")
       .eq("user_id", user.id)
-      .in("status", ["active", "trialing"])
       .single();
 
     console.log("📊 Cenário detectado:", {
       hasSubscription: !!subscription,
       subscriptionId: subscription?.id,
       stripeSubscriptionId: subscription?.stripe_subscription_id,
-      currentPlanPrice: currentPlan?.price,
+      currentPlanPrice: currentPlan.price,
       newPlanPrice: newPlan.price,
       newPlanIdStripe: newPlan.idStripe,
     });
 
-    // CENÁRIO 1: Usuário no plano gratuito quer assinar plano pago
-    if (
-      !subscription &&
-      currentPlan?.price === null &&
-      newPlan.price !== null
-    ) {
-      console.log("✅ Cenário 1: Gratuito → Pago (criar nova assinatura)");
+    // Determinar o cenário
+    const currentPlanPrice = parseFloat(currentPlan.price || "0");
+    const newPlanPrice = parseFloat(newPlan.price || "0");
+    const isCurrentPlanFree = currentPlanPrice === 0;
+    const isNewPlanFree = newPlanPrice === 0;
+
+    // CENÁRIO 1: Gratuito → Pago (criar nova assinatura)
+    if (isCurrentPlanFree && !isNewPlanFree) {
+      console.log("✅ Cenário 1: Gratuito → Pago (criar assinatura)");
 
       if (!newPlan.idStripe) {
         return NextResponse.json(
-          { error: "Plano não possui idStripe configurado" },
+          { error: "Novo plano não possui idStripe configurado" },
           { status: 400 }
         );
       }
 
-      // Criar checkout session
-      const session = await stripe.checkout.sessions.create({
-        customer_email: user.email,
+      // Buscar stripe_customer_id do perfil
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("stripe_customer_id")
+        .eq("id", user.id)
+        .single();
+
+      console.log(
+        "👤 Profile stripe_customer_id:",
+        profile?.stripe_customer_id
+      );
+
+      const sessionParams: Stripe.Checkout.SessionCreateParams = {
+        mode: "subscription",
+        payment_method_types: ["card"],
         line_items: [
           {
             price: newPlan.idStripe,
             quantity: 1,
           },
         ],
-        mode: "subscription",
         success_url: `${process.env.NEXT_PUBLIC_SITE_URL}/dashboard?success=true`,
         cancel_url: `${process.env.NEXT_PUBLIC_SITE_URL}/pricing?canceled=true`,
         metadata: {
           user_id: user.id,
           plan_id: new_plan_id,
         },
+      };
+
+      if (profile?.stripe_customer_id) {
+        sessionParams.customer = profile.stripe_customer_id;
+      } else {
+        sessionParams.customer_email = user.email;
+      }
+
+      console.log("🔧 Criando sessão do Stripe com params:", {
+        mode: sessionParams.mode,
+        price: newPlan.idStripe,
+        customer: sessionParams.customer || sessionParams.customer_email,
+        success_url: sessionParams.success_url,
+        cancel_url: sessionParams.cancel_url,
       });
 
-      return NextResponse.json({
-        success: true,
-        redirect: true,
+      const session = await stripe.checkout.sessions.create(sessionParams);
+
+      console.log("✅ Sessão criada:", {
+        id: session.id,
         url: session.url,
       });
+
+      return NextResponse.json({ url: session.url });
     }
 
-    // CENÁRIO 2: Usuário com plano pago quer trocar para plano gratuito
-    if (subscription?.stripe_subscription_id && newPlan.price === null) {
+    // CENÁRIO 2: Pago → Gratuito (cancelar assinatura)
+    if (!isCurrentPlanFree && isNewPlanFree) {
       console.log("✅ Cenário 2: Pago → Gratuito (cancelar assinatura)");
 
-      // Cancelar assinatura no Stripe (no fim do período)
-      await stripe.subscriptions.update(subscription.stripe_subscription_id, {
-        cancel_at_period_end: true,
-      });
+      if (!subscription?.stripe_subscription_id) {
+        return NextResponse.json(
+          { error: "Subscription não encontrada no Stripe" },
+          { status: 404 }
+        );
+      }
 
-      // Atualizar no banco
+      try {
+        // Tentar cancelar subscription no Stripe
+        await stripe.subscriptions.update(subscription.stripe_subscription_id, {
+          cancel_at_period_end: true,
+        });
+        console.log("✅ Subscription cancelada no Stripe");
+      } catch (stripeError: any) {
+        // Se a subscription não existe no Stripe (teste), apenas logar e continuar
+        if (stripeError.code === "resource_missing") {
+          console.log(
+            "⚠️ Subscription não existe no Stripe (ambiente de teste), continuando..."
+          );
+        } else {
+          // Se for outro erro, lançar
+          throw stripeError;
+        }
+      }
+
+      // Atualizar no banco (independente do Stripe)
       await supabase
         .from("subscriptions")
         .update({
+          status: "canceled",
           cancel_at_period_end: true,
+          canceled_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
         })
         .eq("id", subscription.id);
 
+      // Atualizar plano do perfil para Freemium
+      await supabase
+        .from("profiles")
+        .update({ plan_id: new_plan_id })
+        .eq("id", user.id);
+
       return NextResponse.json({
         success: true,
-        message: "Assinatura será cancelada no fim do período",
+        message: "Você voltou ao plano Freemium com sucesso!",
       });
     }
 
-    // CENÁRIO 3: Usuário com plano pago quer trocar para outro plano pago
-    if (subscription?.stripe_subscription_id && newPlan.price !== null) {
+    // CENÁRIO 3: Pago → Pago (atualizar assinatura)
+    if (!isCurrentPlanFree && !isNewPlanFree) {
       console.log("✅ Cenário 3: Pago → Pago (atualizar assinatura)");
 
-      // Verificar se o novo plano tem idStripe
       if (!newPlan.idStripe) {
-        console.error("❌ Novo plano não tem idStripe:", newPlan);
+        console.log("❌ Novo plano não tem idStripe:", newPlan);
         return NextResponse.json(
           {
             error:
@@ -179,93 +232,58 @@ export async function POST(request: NextRequest) {
         );
       }
 
-      try {
-        // Buscar subscription no Stripe
-        console.log(
-          "🔍 Buscando subscription no Stripe:",
-          subscription.stripe_subscription_id
-        );
-        const stripeSubscription = await stripe.subscriptions.retrieve(
-          subscription.stripe_subscription_id
-        );
-
-        console.log("📦 Subscription do Stripe:", {
-          id: stripeSubscription.id,
-          status: stripeSubscription.status,
-          items: stripeSubscription.items.data.map((item) => ({
-            id: item.id,
-            price: item.price.id,
-          })),
-        });
-
-        // Atualizar subscription com novo price (pro-rata automático)
-        console.log(
-          "🔄 Atualizando subscription para price:",
-          newPlan.idStripe
-        );
-        const updatedSubscription = await stripe.subscriptions.update(
-          subscription.stripe_subscription_id,
-          {
-            items: [
-              {
-                id: stripeSubscription.items.data[0].id,
-                price: newPlan.idStripe,
-              },
-            ],
-            proration_behavior: "always_invoice", // Criar fatura pro-rata imediatamente
-          }
-        );
-
-        console.log("✅ Subscription atualizada:", updatedSubscription.id);
-
-        // Atualizar plano no banco
-        await supabase
-          .from("profiles")
-          .update({ plan_id: new_plan_id })
-          .eq("id", user.id);
-
-        console.log("✅ Profile atualizado no banco");
-
-        return NextResponse.json({
-          success: true,
-          message: "Plano alterado com sucesso",
-        });
-      } catch (stripeError: any) {
-        console.error("❌ Erro no Stripe:", stripeError);
+      if (!subscription?.stripe_subscription_id) {
         return NextResponse.json(
-          { error: `Erro no Stripe: ${stripeError.message}` },
-          { status: 500 }
+          { error: "Subscription não encontrada" },
+          { status: 404 }
         );
       }
+
+      // Buscar subscription no Stripe
+      const stripeSubscription = await stripe.subscriptions.retrieve(
+        subscription.stripe_subscription_id
+      );
+
+      // Atualizar o item da subscription
+      await stripe.subscriptions.update(subscription.stripe_subscription_id, {
+        items: [
+          {
+            id: stripeSubscription.items.data[0].id,
+            price: newPlan.idStripe,
+          },
+        ],
+        proration_behavior: "create_prorations",
+      });
+
+      // Atualizar no banco
+      await supabase
+        .from("subscriptions")
+        .update({
+          stripe_price_id: newPlan.idStripe,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", subscription.id);
+
+      await supabase
+        .from("profiles")
+        .update({ plan_id: new_plan_id })
+        .eq("id", user.id);
+
+      return NextResponse.json({
+        success: true,
+        message: "Plano atualizado com sucesso!",
+      });
     }
 
-    // CENÁRIO 4: Qualquer outro caso não tratado
-    console.error("❌ Cenário não suportado:", {
-      hasSubscription: !!subscription,
-      subscriptionId: subscription?.id,
-      stripeSubscriptionId: subscription?.stripe_subscription_id,
-      currentPlanPrice: currentPlan?.price,
-      newPlanPrice: newPlan.price,
-      newPlanIdStripe: newPlan.idStripe,
-    });
-
+    // CENÁRIO 4: Gratuito → Gratuito (não deveria acontecer)
     return NextResponse.json(
-      {
-        error:
-          "Cenário não suportado. Por favor, entre em contato com o suporte.",
-        details: {
-          hasSubscription: !!subscription,
-          currentPlanPrice: currentPlan?.price,
-          newPlanPrice: newPlan.price,
-          hasIdStripe: !!newPlan.idStripe,
-        },
-      },
+      { error: "Não é possível trocar entre planos gratuitos" },
       { status: 400 }
     );
   } catch (error: any) {
-    console.error("❌ Error changing plan:", error);
+    console.error("❌ Erro ao processar mudança de plano:", error);
     return NextResponse.json(
-      { error: error.message || "Erro ao trocar de plano" },
+      { error: error.message || "Erro ao processar mudança de plano" },
       { status: 500 }
     );
   }

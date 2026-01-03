@@ -1,7 +1,14 @@
 "use client";
 
-import { AlertTriangle, HardDrive, Monitor, Zap } from "lucide-react";
+import {
+  AlertCircle,
+  AlertTriangle,
+  HardDrive,
+  Monitor,
+  Zap,
+} from "lucide-react";
 import Link from "next/link";
+import { useEffect, useState } from "react";
 
 interface UsageData {
   screens: {
@@ -16,13 +23,49 @@ interface UsageData {
     unlimited: boolean;
     percentage: number;
   };
+  is_past_due?: boolean;
+  subscription_status?: string;
 }
 
 interface Props {
   usage: UsageData;
 }
 
-export function UsageDashboardClient({ usage }: Props) {
+export function UsageDashboardClient({ usage: initialUsage }: Props) {
+  const [usage, setUsage] = useState(initialUsage);
+  const [showPastDueBanner, setShowPastDueBanner] = useState(
+    initialUsage.is_past_due || false
+  );
+
+  // Atualizar uso a cada 10 segundos
+  useEffect(() => {
+    const fetchUsage = async () => {
+      try {
+        const response = await fetch("/api/usage");
+
+        // ✅ Tratar erro 402 (Payment Required)
+        if (response.status === 402) {
+          await response.json();
+          setShowPastDueBanner(true);
+          console.log("⚠️ Pagamento pendente detectado");
+          return;
+        }
+
+        if (response.ok) {
+          const data = await response.json();
+          setUsage(data);
+          setShowPastDueBanner(data.is_past_due || false);
+          console.log("✅ Usage atualizado, is_past_due:", data.is_past_due);
+        }
+      } catch (error) {
+        console.error("Erro ao buscar uso:", error);
+      }
+    };
+
+    const interval = setInterval(fetchUsage, 10000); // 10 segundos
+    return () => clearInterval(interval);
+  }, []);
+
   const getProgressColor = (percentage: number) => {
     if (percentage >= 90) return "from-[#EF4444] to-[#DC2626]";
     if (percentage >= 80) return "from-[#FACC15] to-[#F59E0B]";
@@ -56,33 +99,62 @@ export function UsageDashboardClient({ usage }: Props) {
 
   return (
     <div className="space-y-6">
-      {/* Aviso de upgrade se próximo do limite */}
-      {(shouldShowWarning(usage.screens.percentage) ||
-        shouldShowWarning(usage.storage.percentage)) && (
-        <div className="bg-linear-to-r from-yellow-50 to-orange-50 dark:from-yellow-900/20 dark:to-orange-900/20 border border-yellow-200 dark:border-yellow-800 rounded-xl p-6">
+      {/* ✅ Banner de pagamento pendente */}
+      {showPastDueBanner && (
+        <div className="bg-red-50 dark:bg-red-900/20 border-l-4 border-red-500 rounded-xl p-6">
           <div className="flex items-start gap-4">
-            <div className="w-12 h-12 bg-linear-to-r from-[#FACC15] to-[#F59E0B] rounded-lg flex items-center justify-center shrink-0">
-              <AlertTriangle className="w-6 h-6 text-white" />
+            <div className="w-12 h-12 bg-red-500 rounded-lg flex items-center justify-center shrink-0">
+              <AlertCircle className="w-6 h-6 text-white" />
             </div>
             <div className="flex-1">
-              <h3 className="text-lg font-bold text-[#111827] dark:text-white mb-1">
-                Você está próximo do limite
+              <h3 className="text-lg font-bold text-red-900 dark:text-red-300 mb-1">
+                Pagamento Pendente
               </h3>
-              <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-                Considere fazer upgrade para continuar sem interrupções e
-                desbloquear recursos ilimitados.
+              <p className="text-sm text-red-800 dark:text-red-400 mb-4">
+                Não conseguimos processar o pagamento da sua assinatura.
+                Atualize seu método de pagamento para continuar usando os
+                recursos premium.
               </p>
               <Link
-                href="/pricing"
-                className="inline-flex items-center gap-2 px-4 py-2 bg-linear-to-r from-[#FACC15] to-[#F59E0B] text-white rounded-lg hover:shadow-lg transition-all font-medium"
+                href="/dashboard/subscriptions"
+                className="inline-flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-semibold"
               >
-                <Zap className="w-4 h-4" />
-                Fazer Upgrade
+                <AlertCircle className="w-4 h-4" />
+                Atualizar Pagamento
               </Link>
             </div>
           </div>
         </div>
       )}
+
+      {/* Aviso de upgrade se próximo do limite */}
+      {!showPastDueBanner &&
+        (shouldShowWarning(usage.screens.percentage) ||
+          shouldShowWarning(usage.storage.percentage)) && (
+          <div className="bg-linear-to-r from-yellow-50 to-orange-50 dark:from-yellow-900/20 dark:to-orange-900/20 border border-yellow-200 dark:border-yellow-800 rounded-xl p-6">
+            <div className="flex items-start gap-4">
+              <div className="w-12 h-12 bg-linear-to-r from-[#FACC15] to-[#F59E0B] rounded-lg flex items-center justify-center shrink-0">
+                <AlertTriangle className="w-6 h-6 text-white" />
+              </div>
+              <div className="flex-1">
+                <h3 className="text-lg font-bold text-[#111827] dark:text-white mb-1">
+                  Você está próximo do limite
+                </h3>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                  Considere fazer upgrade para continuar sem interrupções e
+                  desbloquear recursos ilimitados.
+                </p>
+                <Link
+                  href="/pricing"
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-linear-to-r from-[#FACC15] to-[#F59E0B] text-white rounded-lg hover:shadow-lg transition-all font-medium"
+                >
+                  <Zap className="w-4 h-4" />
+                  Fazer Upgrade
+                </Link>
+              </div>
+            </div>
+          </div>
+        )}
 
       {/* Cards de uso */}
       <div className="grid md:grid-cols-2 gap-6">
