@@ -1,7 +1,11 @@
 "use client";
 
 import { MediaFormProps } from "@/interfaces/Medias";
+import { LocationValue } from "@/interfaces/Preview";
 import { Clock, Trash2, Plus } from "lucide-react";
+import { LocationSelect } from "./LocationSelect";
+
+/* ================= CONSTS ================= */
 
 const POSITIONS = [
   { id: "top-left", label: "Superior Esquerdo" },
@@ -44,9 +48,6 @@ const STYLES = [
       </div>
     ),
   },
-
-  /* ================= NOVOS ================= */
-
   {
     id: "glass",
     label: "Glass",
@@ -61,16 +62,14 @@ const STYLES = [
     label: "Flip",
     preview: (
       <div className="bg-black text-white font-mono text-xl px-4 py-2 rounded-xl shadow-lg">
-        <span className="inline-block">14:32</span>
+        14:32
       </div>
     ),
   },
   {
     id: "pulse",
     label: "Pulse",
-    preview: (
-      <div className="text-white text-xl font-bold scale-100">14:32</div>
-    ),
+    preview: <div className="text-white text-xl font-bold">14:32</div>,
   },
   {
     id: "analog-minimal",
@@ -83,142 +82,81 @@ const STYLES = [
       </div>
     ),
   },
-
-  {
-    id: "analog-neon",
-    label: "Analógico Neon",
-    preview: (
-      <div className="w-16 h-16 rounded-full relative bg-black border border-cyan-400 shadow-[0_0_15px_#22d3ee]">
-        <div className="absolute w-0.5 h-6 bg-cyan-400 top-2 left-1/2 -translate-x-1/2 shadow-[0_0_6px_#22d3ee]" />
-        <div className="absolute w-1 h-8 bg-cyan-300 top-1 left-1/2 -translate-x-1/2 rotate-45 shadow-[0_0_8px_#67e8f9]" />
-        <div className="absolute w-2 h-2 bg-cyan-400 rounded-full top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 shadow-[0_0_8px_#22d3ee]" />
-      </div>
-    ),
-  },
-
-  {
-    id: "analog-corporate",
-    label: "Analógico Corporate",
-    preview: (
-      <div className="w-16 h-16 rounded-full bg-white border-2 border-gray-300 relative shadow">
-        <div className="absolute w-0.5 h-6 bg-gray-800 top-2 left-1/2 -translate-x-1/2" />
-        <div className="absolute w-1 h-8 bg-gray-900 top-1 left-1/2 -translate-x-1/2 rotate-45" />
-        <div className="absolute w-2 h-2 bg-gray-900 rounded-full top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
-      </div>
-    ),
-  },
-
-  {
-    id: "analog-tech",
-    label: "Analógico Tech",
-    preview: (
-      <div className="w-16 h-16 rounded-full bg-gray-900 border border-green-400 relative shadow-inner">
-        <div className="absolute inset-1 rounded-full border border-green-500/30" />
-        <div className="absolute w-0.5 h-6 bg-green-400 top-2 left-1/2 -translate-x-1/2" />
-        <div className="absolute w-1 h-8 bg-green-300 top-1 left-1/2 -translate-x-1/2 rotate-45" />
-        <div className="absolute w-1.5 h-1.5 bg-green-400 rounded-full top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
-      </div>
-    ),
-  },
-
-  {
-    id: "analog-dark",
-    label: "Analógico Dark",
-    preview: (
-      <div className="w-16 h-16 rounded-full bg-black border border-gray-700 relative">
-        <div className="absolute w-0.5 h-6 bg-gray-300 top-2 left-1/2 -translate-x-1/2" />
-        <div className="absolute w-1 h-8 bg-white top-1 left-1/2 -translate-x-1/2 rotate-45" />
-        <div className="absolute w-2 h-2 bg-white rounded-full top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
-      </div>
-    ),
-  },
 ];
 
-const TIMEZONES = [
-  { id: "UTC", label: "UTC" },
-  { id: "America/Sao_Paulo", label: "São Paulo" },
-  { id: "America/New_York", label: "Nova York" },
-  { id: "Europe/Lisbon", label: "Lisboa" },
-  { id: "Europe/London", label: "Londres" },
-  { id: "Asia/Tokyo", label: "Tóquio" },
-];
+/* ================= TYPES ================= */
 
 type ClockConfig = {
   id: string;
   label: string;
-  timezone: string;
-  format: string;
+  location?: LocationValue;
+  format: "12h" | "24h";
 };
 
+/* ================= FORM ================= */
+
 export function TimeForm({ value, onChange }: MediaFormProps) {
-  const config: {
-    overlay: boolean;
-    position: string;
-    style: string;
-    layout: string;
-    clocks: ClockConfig[];
-  } = {
+  const config = {
     overlay: false,
     position: "",
     style: "minimal",
     layout: "vertical",
-    clocks: [],
-    ...value.config,
+    clocks: [] as ClockConfig[],
+    ...(value.config ?? {}),
   };
+  const isClockValid = (clock: ClockConfig) =>
+    !!clock.location && !!clock.location.lat && !!clock.location.lon;
+  /* ================= UPDATE CONFIG ================= */
 
   const updateConfig = (partial: Partial<typeof config>) => {
+    const nextConfig = { ...config, ...partial };
+
+    const hasInvalidClock = nextConfig.clocks?.some(
+      (c: ClockConfig) => !isClockValid(c)
+    );
+
+    if (hasInvalidClock) {
+      console.warn("Config inválida: relógio sem localização");
+      return;
+    }
+
     onChange({
       ...value,
-      config: {
-        ...config,
-        ...partial,
-      },
+      config: nextConfig,
     });
   };
 
   const updateClock = (index: number, partial: Partial<ClockConfig>) => {
-    const updated = [...config.clocks];
-    updated[index] = { ...updated[index], ...partial };
-    updateConfig({ clocks: updated });
+    const clocks = [...config.clocks];
+    clocks[index] = { ...clocks[index], ...partial };
+    updateConfig({ clocks });
   };
+
+  /* ================= UI ================= */
 
   return (
     <div className="space-y-8">
       {/* ================= OVERLAY ================= */}
       <div className="space-y-3">
-        <label className="block text-sm font-medium text-gray-900 dark:text-white">
-          Sobrepor à mídia?
-        </label>
+        <label className="block text-sm font-medium">Sobrepor à mídia?</label>
 
-        <div className="flex items-center gap-4">
-          <button
-            type="button"
-            onClick={() =>
-              updateConfig({
-                overlay: !config.overlay,
-                position: "",
-              })
-            }
-            className={`relative flex w-16 h-8 rounded-full transition-all duration-300 shadow-lg
-              ${
-                config.overlay
-                  ? "bg-linear-to-r from-green-400 to-blue-500"
-                  : "bg-gray-300 dark:bg-gray-600"
-              }
-            `}
-          >
-            <span
-              className={`absolute top-1 w-6 h-6 bg-white rounded-full shadow-md
-                transform transition-transform duration-300
-                ${config.overlay ? "translate-x-9" : "translate-x-1"}
-              `}
-            />
-          </button>
-
-          <span className="font-medium text-gray-700 dark:text-gray-300">
-            {config.overlay ? "Sim" : "Não"}
-          </span>
-        </div>
+        <button
+          type="button"
+          onClick={() =>
+            updateConfig({ overlay: !config.overlay, position: "" })
+          }
+          className={`relative w-16 h-8 rounded-full transition ${
+            config.overlay
+              ? "bg-linear-to-r from-green-400 to-blue-500"
+              : "bg-gray-300"
+          }`}
+        >
+          <span
+            className={`absolute top-1 left-1 w-6 h-6 bg-white rounded-full transition ${
+              config.overlay ? "translate-x-8" : ""
+            }`}
+          />
+        </button>
       </div>
 
       {/* ================= POSITION ================= */}
@@ -281,37 +219,11 @@ export function TimeForm({ value, onChange }: MediaFormProps) {
         </div>
       </div>
 
-      {/* ================= LAYOUT ================= */}
-      <div className="space-y-3">
-        <label className="block text-sm font-medium text-gray-900 dark:text-white">
-          Layout dos relógios
-        </label>
-
-        <div className="flex gap-3">
-          {["vertical", "horizontal"].map((layout) => (
-            <button
-              key={layout}
-              type="button"
-              onClick={() => updateConfig({ layout })}
-              className={`px-4 py-2 rounded-lg text-sm font-medium
-                ${
-                  config.layout === layout
-                    ? "bg-blue-600 text-white"
-                    : "bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200"
-                }
-              `}
-            >
-              {layout === "vertical" ? "Vertical" : "Horizontal"}
-            </button>
-          ))}
-        </div>
-      </div>
-
       {/* ================= CLOCKS ================= */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <h4 className="text-sm font-semibold text-gray-900 dark:text-white">
-            Relógios (GMT)
+            Relógios
           </h4>
 
           <button
@@ -323,7 +235,6 @@ export function TimeForm({ value, onChange }: MediaFormProps) {
                   {
                     id: crypto.randomUUID(),
                     label: "Novo local",
-                    timezone: "UTC",
                     format: "24h",
                   },
                 ],
@@ -341,46 +252,43 @@ export function TimeForm({ value, onChange }: MediaFormProps) {
             key={clock.id}
             className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 space-y-3"
           >
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between gap-3">
               <input
-                type="text"
                 value={clock.label}
                 onChange={(e) => updateClock(index, { label: e.target.value })}
-                className="w-full bg-transparent border-b border-gray-300 dark:border-gray-600 text-sm focus:outline-none"
-                placeholder="Nome do local"
+                className="flex-1 bg-transparent border-b border-gray-300 dark:border-gray-600 text-sm focus:outline-none"
               />
 
               <button
                 type="button"
                 onClick={() =>
                   updateConfig({
-                    clocks: config.clocks.filter(
-                      (c: Partial<ClockConfig>) => c.id !== clock.id
-                    ),
+                    clocks: config.clocks.filter((c) => c.id !== clock.id),
                   })
                 }
-                className="ml-3 text-red-500"
               >
-                <Trash2 className="w-4 h-4" />
+                <Trash2 className="w-4 h-4 text-red-500" />
               </button>
             </div>
 
-            <select
-              value={clock.timezone}
-              onChange={(e) => updateClock(index, { timezone: e.target.value })}
-              className="w-full rounded-lg bg-gray-100 dark:bg-gray-800 p-2 text-sm"
-            >
-              {TIMEZONES.map((tz) => (
-                <option key={tz.id} value={tz.id}>
-                  {tz.label}
-                </option>
-              ))}
-            </select>
-
+            {/* 🔥 LOCALIZAÇÃO DINÂMICA */}
+            {!clock.location && (
+              <span className="text-xs text-red-500">
+                Selecione uma localização válida
+              </span>
+            )}
+            <LocationSelect
+              value={clock.location}
+              onChange={(loc) => updateClock(index, { location: loc })}
+            />
             <select
               value={clock.format}
-              onChange={(e) => updateClock(index, { format: e.target.value })}
-              className="w-full rounded-lg bg-gray-100 dark:bg-gray-800 p-2 text-sm"
+              onChange={(e) =>
+                updateClock(index, {
+                  format: e.target.value as "12h" | "24h",
+                })
+              }
+              className="w-full rounded-lg bg-gray-100 p-2 text-sm"
             >
               <option value="24h">Formato 24h</option>
               <option value="12h">Formato 12h</option>

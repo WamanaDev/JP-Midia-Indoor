@@ -236,7 +236,7 @@ export function TimeOverlay({ config }: TimeOverlayProps) {
       className={`fixed z-50 flex flex-col gap-2 ${positionClass}
         animate-[overlay-fade_0.6s_ease-out]`}
     >
-      <span className="text-xs uppercase tracking-wide text-gray-300">
+      <span className="m-auto text-center justify-center text-xs uppercase tracking-wide text-gray-300">
         {clock.label}
       </span>
 

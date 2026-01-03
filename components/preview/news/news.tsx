@@ -67,10 +67,10 @@ export function News({ config }: NewsProps) {
   }
 
   if (item.source === "Metrópole") {
-    return <Metropole item={item} />;
+    return <Metropole overlay={false} item={item} />;
   }
 
   if (item.source === "G1") {
-    return <G1 item={item} />;
+    return <G1 overlay={false} item={item} />;
   }
 }

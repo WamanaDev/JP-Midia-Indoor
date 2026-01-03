@@ -1,8 +1,12 @@
-// forms/WeatherForm.tsx
 "use client";
 
 import { MediaFormProps } from "@/interfaces/Medias";
 import { Thermometer, Plus, Trash2 } from "lucide-react";
+import { LocationSelect } from "./LocationSelect";
+import { WeatherLocation } from "@/interfaces/Preview";
+import { useMemo } from "react";
+
+/* ================= CONSTANTES ================= */
 
 const POSITIONS = [
   { id: "top-left", label: "Superior Esquerdo" },
@@ -45,9 +49,6 @@ const STYLES = [
       </div>
     ),
   },
-
-  /* ===== MODERNOS ===== */
-
   {
     id: "glass",
     label: "Glass",
@@ -102,87 +103,20 @@ const STYLES = [
   },
 ];
 
-type WeatherLocation = {
-  id: string;
-  label: string;
-  city: string;
-};
-
-// api/weather/cities.ts
-export const CITIES: Record<string, { lat: number; lon: number }> = {
-  // ===== BRASIL =====
-  "São Paulo, BR": { lat: -23.5505, lon: -46.6333 },
-  "Rio de Janeiro, BR": { lat: -22.9068, lon: -43.1729 },
-
-  // Grande SP
-  "Carapicuíba, BR": { lat: -23.5235, lon: -46.8407 },
-  "Osasco, BR": { lat: -23.5324, lon: -46.7916 },
-  "Barueri, BR": { lat: -23.5057, lon: -46.879 },
-  "Santana de Parnaíba, BR": { lat: -23.4445, lon: -46.9178 },
-  "Cotia, BR": { lat: -23.6022, lon: -46.919 },
-  "Taboão da Serra, BR": { lat: -23.6261, lon: -46.7917 },
-  "Embu das Artes, BR": { lat: -23.6489, lon: -46.8521 },
-  "Itapevi, BR": { lat: -23.5488, lon: -46.9325 },
-  "Jandira, BR": { lat: -23.5275, lon: -46.9023 },
-  "São Bernardo do Campo, BR": { lat: -23.6914, lon: -46.5646 },
-  "Santo André, BR": { lat: -23.6639, lon: -46.5383 },
-  "São Caetano do Sul, BR": { lat: -23.6237, lon: -46.5548 },
-  "Diadema, BR": { lat: -23.6865, lon: -46.6234 },
-  "Guarulhos, BR": { lat: -23.4543, lon: -46.5337 },
-  "Mauá, BR": { lat: -23.6678, lon: -46.4613 },
-  "Ribeirão Pires, BR": { lat: -23.7102, lon: -46.4137 },
-  "Suzano, BR": { lat: -23.5425, lon: -46.3117 },
-
-  // ===== EUA =====
-  "New York, US": { lat: 40.7128, lon: -74.006 },
-  "Los Angeles, US": { lat: 34.0522, lon: -118.2437 },
-
-  // ===== EUROPA =====
-  "London, UK": { lat: 51.5074, lon: -0.1278 },
-  "Paris, FR": { lat: 48.8566, lon: 2.3522 },
-  "Rome, IT": { lat: 41.9028, lon: 12.4964 },
-  "Madrid, ES": { lat: 40.4168, lon: -3.7038 },
-  "Lisbon, PT": { lat: 38.7223, lon: -9.1393 },
-  "Berlin, DE": { lat: 52.52, lon: 13.405 },
-
-  // ===== ORIENTE MÉDIO / ÁSIA =====
-  "Dubai, AE": { lat: 25.2048, lon: 55.2708 },
-  "Tokyo, JP": { lat: 35.6762, lon: 139.6503 },
-  "Seoul, KR": { lat: 37.5665, lon: 126.978 },
-  "Bangkok, TH": { lat: 13.7563, lon: 100.5018 },
-  "Singapore, SG": { lat: 1.3521, lon: 103.8198 },
-
-  // ===== OUTROS =====
-  "Sydney, AU": { lat: -33.8688, lon: 151.2093 },
-  "Toronto, CA": { lat: 43.6532, lon: -79.3832 },
-  "Mexico City, MX": { lat: 19.4326, lon: -99.1332 },
-};
-
-const WEATHER_LOCATIONS = Object.keys(CITIES).map((city) => ({
-  id: city
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/\s+/g, "_")
-    .replace(",", ""),
-  label: city,
-  city,
-}));
+/* ================= FORM ================= */
 
 export function WeatherForm({ value, onChange }: MediaFormProps) {
-  const config: {
-    overlay: boolean;
-    position: string;
-    style: string;
-    layout: string;
-    locations: WeatherLocation[];
-  } = {
-    overlay: false,
-    position: "",
-    style: "minimal",
-    layout: "vertical",
-    locations: [],
-    ...value.config,
-  };
+  const config = useMemo(
+    () => ({
+      overlay: false,
+      position: "",
+      style: "minimal",
+      layout: "vertical",
+      locations: [] as WeatherLocation[],
+      ...value.config,
+    }),
+    [value.config]
+  );
 
   const updateConfig = (partial: Partial<typeof config>) => {
     onChange({
@@ -315,7 +249,6 @@ export function WeatherForm({ value, onChange }: MediaFormProps) {
                   {
                     id: crypto.randomUUID(),
                     label: "Novo local",
-                    city: "São Paulo",
                   },
                 ],
               })
@@ -348,9 +281,7 @@ export function WeatherForm({ value, onChange }: MediaFormProps) {
                 type="button"
                 onClick={() =>
                   updateConfig({
-                    locations: config.locations.filter(
-                      (l: Partial<WeatherLocation>) => l.id !== loc.id
-                    ),
+                    locations: config.locations.filter((l) => l.id !== loc.id),
                   })
                 }
                 className="text-red-500"
@@ -359,20 +290,28 @@ export function WeatherForm({ value, onChange }: MediaFormProps) {
               </button>
             </div>
 
-            {/* SELECT DE LOCAIS */}
-            <select
-              value={loc.city}
-              onChange={(e) => updateLocation(index, { city: e.target.value })}
-              className="w-full rounded-lg bg-gray-100 dark:bg-gray-800 p-2 text-sm"
-            >
-              <option value="">Selecione um local</option>
+            {/* Location Select */}
+            <LocationSelect
+              value={loc.location}
+              onChange={(location) => {
+                if (!location) {
+                  updateLocation(index, { location: undefined });
+                  return;
+                }
 
-              {WEATHER_LOCATIONS.map((place) => (
-                <option key={place.id} value={place.city}>
-                  {place.label}
-                </option>
-              ))}
-            </select>
+                updateLocation(index, {
+                  location,
+                  label:
+                    loc.label === "Novo local" || !loc.label
+                      ? `${location.name}, ${location.country}`
+                      : loc.label,
+                });
+              }}
+            />
+
+            {!loc.location && (
+              <p className="text-xs text-red-500">Selecione um local válido</p>
+            )}
           </div>
         ))}
       </div>

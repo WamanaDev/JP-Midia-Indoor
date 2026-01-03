@@ -6,6 +6,8 @@ import { News } from "./news/news";
 import { TimeNotOverlay } from "./time/TimeNotOverlay";
 import { TimeOverlay } from "./time/TimeOverlay";
 import { WeatherNotOverlay } from "./weather/WeatherNotOverlay";
+import { WeatherOverlay } from "./weather/WeatherOverlay";
+import { NewsOverlay } from "./news/NewsOverlay";
 
 // tipos básicos (simplifiquei)
 type PlaylistItem = {
@@ -248,15 +250,15 @@ export function PlayerCore({ playlistId }: PlayerCoreProps) {
       {/* ===================== */}
       {/* OVERLAYS              */}
       {/* ===================== */}
-      {newsOverlay.length > 0 && (
-        <div className="absolute bottom-0 left-0 right-0 z-10">
-          {/* <News overlay /> */}
+      {newsOverlay.map((item) => (
+        <div key={item.id} className="absolute bottom-0 left-0 right-0 z-20">
+          <NewsOverlay config={item.config} />
         </div>
-      )}
+      ))}
 
       {temperatureOverlay.map((item) => (
         <div key={item.id} className="absolute top-4 right-4 z-20 text-white">
-          {/* <Temperature config={item.config} /> */}
+          <WeatherOverlay config={item.config} />
         </div>
       ))}
 

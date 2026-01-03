@@ -20,7 +20,12 @@ interface WeatherNotOverlayProps {
     locations: {
       id: string;
       label: string;
-      city: string;
+      location: {
+        name: string;
+        country: string;
+        lat: number;
+        lon: number;
+      };
       unit?: "C" | "F";
     }[];
   };
@@ -40,9 +45,13 @@ export function WeatherNotOverlay({ config }: WeatherNotOverlayProps) {
     try {
       const results = await Promise.all(
         config.locations.map(async (loc) => {
-          const res = await fetch(
-            `/api/weather?city=${encodeURIComponent(loc.city)}`
-          );
+          const { lat, lon } = loc.location;
+
+          const res = await fetch(`/api/player/weather?lat=${lat}&lon=${lon}`);
+
+          if (!res.ok) {
+            return [loc.id, { temperature: null, unit: "C" }] as const;
+          }
 
           const json = await res.json();
 
@@ -68,11 +77,13 @@ export function WeatherNotOverlay({ config }: WeatherNotOverlayProps) {
   useEffect(() => {
     if (!config.locations?.length) return;
 
-    fetchWeather();
+    const timeout = setTimeout(fetchWeather, 0);
+    const interval = setInterval(fetchWeather, 300_000); // 5 minutos
 
-    const interval = setInterval(fetchWeather, 300000); // 5 minutos
-
-    return () => clearInterval(interval);
+    return () => {
+      clearTimeout(timeout);
+      clearInterval(interval);
+    };
   }, [config.locations]);
 
   if (!config.locations?.length) {
