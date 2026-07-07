@@ -78,6 +78,17 @@ http://localhost:3000
 
 ---
 
+## 🌐 Demonstração
+
+Experimente a aplicação em funcionamento:
+
+* **Dashboard Web:** https://jpdash20.vercel.app/
+* **Aplicativo Player (Repositório):** https://github.com/WamanaDev/Midia-Indoor-APP
+
+> O Dashboard é responsável pelo gerenciamento dos conteúdos, enquanto o aplicativo Player é responsável pela exibição das mídias nas telas de Digital Signage.
+
+---
+
 # 👨‍💻 Autor
 
 Desenvolvido por **WamanaDev**.
