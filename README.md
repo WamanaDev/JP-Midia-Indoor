@@ -1,36 +1,87 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 📺 JP Mídia Indoor
 
-## Getting Started
+Uma aplicação **Full Stack** desenvolvida para gerenciamento e exibição de conteúdos em telas de **Mídia Indoor**. O sistema combina um backend performático com um frontend moderno, proporcionando uma solução robusta para gerenciamento e reprodução de conteúdo em tempo real.
 
-First, run the development server:
+---
+
+# 🛠️ Tecnologias Utilizadas
+
+O projeto foi desenvolvido utilizando as principais tecnologias do ecossistema JavaScript:
+
+* **Next.js** — Framework React utilizado para o frontend, backend e rotas de API.
+* **React** — Biblioteca para construção de interfaces modernas e componentizadas.
+* **TypeScript / JavaScript (ES6+)** — Desenvolvimento com tipagem estática e recursos modernos da linguagem.
+* **Bootstrap & CSS3** — Layout responsivo e interface adaptada para TVs, monitores e displays comerciais.
+* **Font Awesome** — Biblioteca de ícones para uma experiência visual mais intuitiva.
+
+---
+
+# ✨ Funcionalidades
+
+* 📺 Gerenciamento de conteúdos para telas de mídia indoor.
+* 🚀 Arquitetura Full Stack utilizando Next.js.
+* ⚡ Alto desempenho e carregamento otimizado.
+* 📱 Interface responsiva para diferentes resoluções.
+* 🧩 Código modular e de fácil manutenção.
+* 🔄 Integração entre frontend e backend através das API Routes do Next.js.
+
+---
+
+# 🚀 Executando o Projeto
+
+## Pré-requisitos
+
+Antes de começar, você precisará ter instalado:
+
+* Node.js (versão 18 ou superior)
+* npm ou yarn
+
+## Clone o repositório
+
+```bash
+git clone https://github.com/WamanaDev/JP-Midia-Indoor.git
+```
+
+## Acesse a pasta do projeto
+
+```bash
+cd JP-Midia-Indoor
+```
+
+## Instale as dependências
+
+```bash
+npm install
+```
+
+## Execute o projeto
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+A aplicação estará disponível em:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```text
+http://localhost:3000
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+---
 
-## Learn More
+# 🎯 Diferenciais
 
-To learn more about Next.js, take a look at the following resources:
+* Arquitetura escalável.
+* Componentização em React.
+* Fácil manutenção.
+* Código limpo e organizado.
+* Ideal para sistemas de Digital Signage (Mídia Indoor).
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+---
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+# 👨‍💻 Autor
 
-## Deploy on Vercel
+Desenvolvido por **WamanaDev**.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### GitHub
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+https://github.com/WamanaDev
