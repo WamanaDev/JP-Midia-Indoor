@@ -1,98 +1,139 @@
-# 📺 JP Mídia Indoor
+# 📺 JP Mídia Indoor — Dashboard Administrativo
 
-Uma aplicação **Full Stack** desenvolvida para gerenciamento e exibição de conteúdos em telas de **Mídia Indoor**. O sistema combina um backend performático com um frontend moderno, proporcionando uma solução robusta para gerenciamento e reprodução de conteúdo em tempo real.
+Sistema **Full Stack** de gerenciamento e exibição de conteúdo para **Digital Signage** (mídia indoor em TVs comerciais, monitores e displays).
 
----
-
-# 🛠️ Tecnologias Utilizadas
-
-O projeto foi desenvolvido utilizando as principais tecnologias do ecossistema JavaScript:
-
-* **Next.js** — Framework React utilizado para o frontend, backend e rotas de API.
-* **React** — Biblioteca para construção de interfaces modernas e componentizadas.
-* **TypeScript / JavaScript (ES6+)** — Desenvolvimento com tipagem estática e recursos modernos da linguagem.
-* **Bootstrap & CSS3** — Layout responsivo e interface adaptada para TVs, monitores e displays comerciais.
-* **Font Awesome** — Biblioteca de ícones para uma experiência visual mais intuitiva.
+> Projeto idealizado e desenvolvido sozinho, do zero ao deploy em produção. Nasceu como produto de uma empresa própria que não avançou comercialmente — hoje é meu principal case técnico Full Stack.
 
 ---
 
-# ✨ Funcionalidades
+## 🎯 Problema que resolve
 
-* 📺 Gerenciamento de conteúdos para telas de mídia indoor.
-* 🚀 Arquitetura Full Stack utilizando Next.js.
-* ⚡ Alto desempenho e carregamento otimizado.
-* 📱 Interface responsiva para diferentes resoluções.
-* 🧩 Código modular e de fácil manutenção.
-* 🔄 Integração entre frontend e backend através das API Routes do Next.js.
+Negócios com múltiplas telas de propaganda (lojas, restaurantes, clínicas) precisam gerenciar conteúdo de forma centralizada, sem depender de atualização manual tela por tela.
+
+- ✅ Upload e organização de mídias (imagens/vídeos) em um painel único
+- ✅ Atualização automática e instantânea em todas as telas conectadas
+- ✅ Controle de acesso por autenticação
+- ✅ Armazenamento de arquivos escalável e de baixo custo
 
 ---
 
-# 🚀 Executando o Projeto
+## 🏗️ Arquitetura
 
-## Pré-requisitos
+```
+Frontend (Next.js + React + TypeScript)
+  └─ Dashboard administrativo, upload de mídias, autenticação JWT
 
-Antes de começar, você precisará ter instalado:
+API (NestJS)
+  └─ Regras de negócio, endpoints REST, integração com banco e storage
 
-* Node.js (versão 18 ou superior)
-* npm ou yarn
+Banco de Dados (PostgreSQL via Supabase)
+  └─ Usuários, mídias, playlists e dispositivos
+  └─ Supabase Realtime: listeners que notificam mudanças instantaneamente
 
-## Clone o repositório
+Storage (Cloudflare R2)
+  └─ Armazenamento de imagens e vídeos
 
+Players (Android TV, Web)
+  └─ Escutam mudanças via Supabase Realtime e atualizam a exibição sem polling
+```
+
+---
+
+## 🔄 Sincronização em tempo real (Supabase Realtime)
+
+Ao invés de implementar um servidor WebSocket próprio, o projeto usa o **Supabase Realtime**, que expõe os eventos de mudança do PostgreSQL diretamente para os clientes:
+
+```typescript
+import { createClient } from '@supabase/supabase-js'
+
+const supabase = createClient(SUPABASE_URL, SUPABASE_KEY)
+
+// Player escuta mudanças na tabela de mídias do seu dispositivo
+supabase
+  .channel('public:medias')
+  .on(
+    'postgres_changes',
+    { event: '*', schema: 'public', table: 'medias', filter: `device_id=eq.${deviceId}` },
+    (payload) => updatePlaylist(payload.new)
+  )
+  .subscribe()
+```
+
+**Fluxo:** Admin atualiza mídia → API salva no Postgres → Supabase Realtime detecta a mudança → todos os players conectados recebem a atualização e trocam o conteúdo, sem refresh manual.
+
+**Por que essa escolha:** menos infraestrutura para manter, escalabilidade gerenciada pelo Supabase, e foco no que importa — a lógica de negócio — em vez de reimplementar um servidor de WebSockets do zero.
+
+---
+
+## ✨ Funcionalidades
+
+- 🔐 Autenticação JWT e controle de acesso
+- 📤 Upload de imagens e vídeos, organizados em playlists
+- 🖥️ Cadastro e gerenciamento de dispositivos/telas
+- ⚡ Sincronização em tempo real (Supabase Realtime)
+- 📱 Interface responsiva para uso em desktop e tablet
+
+---
+
+## 🛠️ Tecnologias
+
+**Frontend:** Next.js, React, TypeScript, Tailwind CSS
+**Backend:** NestJS, Node.js, APIs REST, JWT
+**Dados:** PostgreSQL, Supabase (Database + Realtime)
+**Infra:** Vercel (deploy), Cloudflare R2 (storage)
+
+---
+
+## 🚀 Como executar localmente
+
+### Pré-requisitos
+```
+Node.js 18+
+npm ou yarn
+Conta Supabase (banco + realtime)
+```
+
+### Passos
 ```bash
 git clone https://github.com/WamanaDev/JP-Midia-Indoor.git
-```
-
-## Acesse a pasta do projeto
-
-```bash
 cd JP-Midia-Indoor
-```
-
-## Instale as dependências
-
-```bash
 npm install
 ```
 
-## Execute o projeto
+Crie um `.env.local`:
+```env
+DATABASE_URL="sua-connection-string-supabase"
+JWT_SECRET="sua-chave-secreta"
+NEXT_PUBLIC_SUPABASE_URL="sua-url-supabase"
+NEXT_PUBLIC_SUPABASE_ANON_KEY="sua-anon-key"
+R2_ACCOUNT_ID="..."
+R2_ACCESS_KEY="..."
+R2_SECRET_KEY="..."
+R2_BUCKET_NAME="..."
+```
 
 ```bash
 npm run dev
 ```
 
-A aplicação estará disponível em:
-
-```text
-http://localhost:3000
-```
+Acesse: **http://localhost:3000**
 
 ---
 
-# 🎯 Diferenciais
+## 🌐 Projetos relacionados
 
-* Arquitetura escalável.
-* Componentização em React.
-* Fácil manutenção.
-* Código limpo e organizado.
-* Ideal para sistemas de Digital Signage (Mídia Indoor).
-
----
-
-## 🌐 Demonstração
-
-Experimente a aplicação em funcionamento:
-
-* **Dashboard Web:** https://jpdash20.vercel.app/
-* **Aplicativo Player (Repositório):** https://github.com/WamanaDev/Midia-Indoor-APP
-
-> O Dashboard é responsável pelo gerenciamento dos conteúdos, enquanto o aplicativo Player é responsável pela exibição das mídias nas telas de Digital Signage.
+| Link | Descrição |
+| --- | --- |
+| 🌐 [Demo ao vivo](https://jpdash20.vercel.app/) | Dashboard em produção |
+| 📱 [Player Android TV](https://github.com/WamanaDev/Midia-Indoor-APP) | App que exibe as mídias sincronizadas |
 
 ---
 
-# 👨‍💻 Autor
+## 👨‍💻 Autor
 
-Desenvolvido por **WamanaDev**.
+**Wictor Pamplona** — Desenvolvedor Full Stack Júnior (Node.js/React)
 
-### GitHub
-
-https://github.com/WamanaDev
+- GitHub: [github.com/WamanaDev](https://github.com/WamanaDev)
+- LinkedIn: [linkedin.com/in/wictor-pamplona](https://www.linkedin.com/in/wictor-pamplona)
+- E-mail: wictorpamp@gmail.com
+- 
