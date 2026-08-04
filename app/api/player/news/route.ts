@@ -1,4 +1,7 @@
 import { parseRSSNormalized } from "@/components/preview/news/parse";
+import { getClientIp } from "@/lib/get-client-ip";
+import { rateLimit } from "@/lib/rate-limit";
+import { safeFetch } from "@/lib/safe-fetch";
 import { NextResponse } from "next/server";
 
 /* ================= TYPES ================= */
@@ -19,7 +22,16 @@ type NewsRequest = {
 
 /* ================= POST ================= */
 
+const MAX_FEEDS_PER_REQUEST = 20;
+
 export async function POST(req: Request) {
+  if (!rateLimit(getClientIp(req))) {
+    return NextResponse.json(
+      { items: [], error: "Muitas requisições, tente novamente em instantes" },
+      { status: 429 }
+    );
+  }
+
   try {
     const body = (await req.json()) as NewsRequest;
 
@@ -27,24 +39,26 @@ export async function POST(req: Request) {
       return NextResponse.json({ items: [] });
     }
 
+    const feeds = Object.entries(body.news)
+      .flatMap(([source, urls]) => urls.map((url) => ({ source, url })))
+      .slice(0, MAX_FEEDS_PER_REQUEST);
+
     const responses = await Promise.all(
-      Object.entries(body.news).flatMap(([source, urls]) =>
-        urls.map(async (url) => {
-          try {
-            const res = await fetch(url, {
-              // 🔥 cache inteligente por 5 minutos
-              next: { revalidate: 3600 },
-            });
+      feeds.map(async ({ source, url }) => {
+        try {
+          const res = await safeFetch(url, {
+            // 🔥 cache inteligente por 5 minutos
+            next: { revalidate: 3600 },
+          });
 
-            if (!res.ok) return [];
+          if (!res.ok) return [];
 
-            const xml = await res.text();
-            return parseRSSNormalized(xml, source);
-          } catch {
-            return [];
-          }
-        })
-      )
+          const xml = await res.text();
+          return parseRSSNormalized(xml, source);
+        } catch {
+          return [];
+        }
+      })
     );
 
     let items: NewsItem[] = responses.flat();

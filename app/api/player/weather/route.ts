@@ -1,7 +1,16 @@
 // app/api/weather/route.ts
+import { getClientIp } from "@/lib/get-client-ip";
+import { rateLimit } from "@/lib/rate-limit";
 import { NextResponse } from "next/server";
 
 export async function GET(req: Request) {
+  if (!rateLimit(getClientIp(req))) {
+    return NextResponse.json(
+      { error: "Muitas requisições, tente novamente em instantes" },
+      { status: 429 }
+    );
+  }
+
   const { searchParams } = new URL(req.url);
 
   const lat = Number(searchParams.get("lat"));
