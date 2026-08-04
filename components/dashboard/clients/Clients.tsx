@@ -41,7 +41,7 @@ export function Clients({ clients }: Props) {
         />
       )}
 
-      {clients && clients.length === 0 ? (
+      {!clients || clients.length === 0 ? (
         <div className="text-center p-12 border rounded-xl">
           <Users className="mx-auto w-12 h-12 text-gray-400" />
           <p className="mt-4 text-gray-500">Nenhum cliente cadastrado</p>

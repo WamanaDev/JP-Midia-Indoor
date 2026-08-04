@@ -393,8 +393,8 @@ export function SubscriptionClient({
               <p className="text-sm text-gray-600 dark:text-gray-400">Valor</p>
             </div>
             <p className="text-2xl font-bold text-[#111827] dark:text-white">
-              {currentPlan?.price !== null
-                ? `R$ ${currentPlan?.price}/mês`
+              {currentPlan?.price != null
+                ? `R$ ${currentPlan.price}/mês`
                 : "Gratuito"}
             </p>
           </div>
@@ -451,7 +451,7 @@ export function SubscriptionClient({
       </div>
 
       {/* Métodos de Pagamento */}
-      {subscription && currentPlan?.price !== null && (
+      {subscription && currentPlan?.price != null && (
         <div className="bg-white dark:bg-[#1F2937] rounded-xl p-6 border border-gray-200 dark:border-gray-700 shadow-sm">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-xl font-bold text-[#111827] dark:text-white">
@@ -661,7 +661,7 @@ export function SubscriptionClient({
       {/* Cancelar Assinatura */}
       {subscription &&
         !subscription.cancel_at_period_end &&
-        currentPlan?.price !== null && (
+        currentPlan?.price != null && (
           <div className="bg-red-50 dark:bg-red-900/20 rounded-xl p-6 border-2 border-red-200 dark:border-red-800">
             <h3 className="text-lg font-bold text-red-900 dark:text-red-300 mb-2">
               Cancelar Assinatura

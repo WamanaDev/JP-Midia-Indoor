@@ -44,7 +44,7 @@ export function Playlists({ playlists, clients }: Props) {
         />
       )}
 
-      {playlists && playlists.length === 0 ? (
+      {!playlists || playlists.length === 0 ? (
         <div className="text-center p-12 border rounded-xl">
           <Play className="mx-auto w-12 h-12 text-gray-400" />
           <p className="mt-4 text-gray-500">Nenhuma playlist cadastrado</p>

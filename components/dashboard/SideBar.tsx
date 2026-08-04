@@ -2,7 +2,6 @@
 
 import { useAuth } from "@/context/AuthContext";
 import {
-  Activity,
   LayoutGrid,
   LogOut,
   Monitor,
@@ -42,7 +41,6 @@ const menuItems = [
   },
   { id: "medias", icon: Upload, label: "Mídias", href: "/dashboard/medias" },
   { id: "screens", icon: Tv, label: "Telas", href: "/dashboard/screens" },
-  { id: "logs", icon: Activity, label: "Logs", href: "/dashboard/logs" },
   {
     id: "subscriptions",
     icon: Wallet,

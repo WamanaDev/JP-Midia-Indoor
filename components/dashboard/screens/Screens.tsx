@@ -88,7 +88,7 @@ export function Screens({ screens, clients, playlists }: Props) {
         />
       )}
 
-      {screens && screens.length === 0 ? (
+      {!screens || screens.length === 0 ? (
         <div className="text-center p-12 border rounded-xl">
           <Users className="mx-auto w-12 h-12 text-gray-400" />
           <p className="mt-4 text-gray-500">Nenhuma tela cadastrada</p>

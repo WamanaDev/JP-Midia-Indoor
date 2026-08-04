@@ -1,6 +1,8 @@
 "use client";
 
 import { upsertClientAction } from "@/app/dashboard/clients/actions";
+import { AlertCircle } from "lucide-react";
+import { useActionState } from "react";
 
 interface Client {
   id?: string;
@@ -17,6 +19,9 @@ interface FormClientProps {
 
 export function FormClient({ client, onCancel }: FormClientProps) {
   const isEditing = Boolean(client?.id);
+  const [state, formAction, isPending] = useActionState(upsertClientAction, {
+    error: null,
+  });
 
   return (
     <div className="bg-white dark:bg-[#1F2937] rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
@@ -24,7 +29,16 @@ export function FormClient({ client, onCancel }: FormClientProps) {
         {isEditing ? "Editar Cliente" : "Novo Cliente"}
       </h3>
 
-      <form action={upsertClientAction} className="space-y-4">
+      {state.error && (
+        <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg flex items-start gap-2">
+          <AlertCircle className="w-5 h-5 text-red-600 dark:text-red-400 shrink-0 mt-0.5" />
+          <p className="text-sm text-red-800 dark:text-red-300">
+            {state.error}
+          </p>
+        </div>
+      )}
+
+      <form action={formAction} className="space-y-4">
         {/* ID oculto para edição */}
         {isEditing && <input type="hidden" name="id" value={client!.id} />}
 
@@ -71,9 +85,10 @@ export function FormClient({ client, onCancel }: FormClientProps) {
         <div className="flex gap-3">
           <button
             type="submit"
-            className="cursor-pointer px-6 py-2 bg-[#3B82F6] text-white font-semibold rounded-lg hover:bg-[#1E3A8A] transition-colors"
+            disabled={isPending}
+            className="cursor-pointer px-6 py-2 bg-[#3B82F6] text-white font-semibold rounded-lg hover:bg-[#1E3A8A] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {isEditing ? "Atualizar" : "Criar"}
+            {isPending ? "Salvando..." : isEditing ? "Atualizar" : "Criar"}
           </button>
 
           {onCancel && (

@@ -17,7 +17,12 @@ export async function toggleClientAction(id: string, isActive: boolean) {
   revalidatePath("/dashboard/clients");
 }
 
-export async function upsertClientAction(formData: FormData) {
+export type UpsertClientState = { error: string | null };
+
+export async function upsertClientAction(
+  _prevState: UpsertClientState,
+  formData: FormData
+): Promise<UpsertClientState> {
   const supabase = await createClient();
 
   const {
@@ -25,7 +30,7 @@ export async function upsertClientAction(formData: FormData) {
   } = await supabase.auth.getUser();
 
   if (!user) {
-    throw new Error("Usuário não autenticado");
+    return { error: "Usuário não autenticado" };
   }
 
   const id = formData.get("id") as string | null;
@@ -38,12 +43,14 @@ export async function upsertClientAction(formData: FormData) {
     user_id: user.id,
   };
 
-  if (id) {
-    // EDITAR
-    await supabase.from("clients").update(payload).eq("id", id);
-  } else {
-    // CRIAR
-    await supabase.from("clients").insert(payload);
+  const { error } = id
+    ? await supabase.from("clients").update(payload).eq("id", id)
+    : await supabase.from("clients").insert(payload);
+
+  if (error) {
+    return { error: error.message };
   }
+
   revalidatePath("/dashboard/clients");
+  return { error: null };
 }

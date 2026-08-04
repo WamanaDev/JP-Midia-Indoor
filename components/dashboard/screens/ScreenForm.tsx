@@ -29,6 +29,11 @@ export function ScreenForm({
   const [error, setError] = useState("");
 
   const handleCheckCode = async () => {
+    if (!code.trim()) {
+      setError("Informe o código de vinculação");
+      return;
+    }
+
     try {
       setVinculation(true);
       await checkDeviceCode(code);
@@ -74,9 +79,9 @@ export function ScreenForm({
             <div className="flex gap-3">
               <button
                 type="button"
-                disabled={vinculation ? true : false}
+                disabled={vinculation || !code.trim()}
                 onClick={handleCheckCode}
-                className="px-6 py-2 bg-[#3B82F6] text-white font-semibold rounded-lg hover:bg-[#1E3A8A] transition-colors"
+                className="px-6 py-2 bg-[#3B82F6] text-white font-semibold rounded-lg hover:bg-[#1E3A8A] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {vinculation ? "Vinculando" : "Vincular"}
               </button>
