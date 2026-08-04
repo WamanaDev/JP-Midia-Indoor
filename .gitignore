@@ -39,3 +39,23 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 .env*.local
+
+# Claude Code local settings — command history here has embedded API
+# keys/tokens from approved Bash calls, must never be committed
+.claude/
+
+# security / pentest reports — don't want live vulnerability details
+# sitting in git history
+pentest.md
+PENTEST-REPORT.md
+
+# full raw DB dumps — large and contain real user/business data;
+# migration/clone_01_schema.sql and clone_03_post_data.sql (structure
+# only, no data) stay tracked as schema documentation
+clone_completo.sql
+migration/clone_02_data.sql
+migration/backup_full.sql
+
+# project standardizes on yarn; a stray package-lock.json causes
+# mixed-package-manager installs
+package-lock.json

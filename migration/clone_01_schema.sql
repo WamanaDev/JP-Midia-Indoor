@@ -1,45 +1,31 @@
 --
--- PostgreSQL database dump
+-- Bloco extraido de clone_completo.sql (schema public + cron.job)
+-- Gerado para restaurar em um projeto Supabase novo/vazio.
 --
-
-\restrict VMbsgwBCmCfK5ZUJkpCuhabJLZIKRDWzSZevTxgZRM0Pk0ee9o79EOdCySnSi0w
-
--- Dumped from database version 17.6
--- Dumped by pg_dump version 18.4
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
 SET idle_in_transaction_session_timeout = 0;
-SET transaction_timeout = 0;
 SET client_encoding = 'UTF8';
 SET standard_conforming_strings = on;
-SELECT pg_catalog.set_config('search_path', '', false);
 SET check_function_bodies = false;
 SET xmloption = content;
 SET client_min_messages = warning;
 SET row_security = off;
 
---
--- Name: public; Type: SCHEMA; Schema: -; Owner: pg_database_owner
---
-
 CREATE SCHEMA IF NOT EXISTS public;
 
-
-ALTER SCHEMA public OWNER TO pg_database_owner;
-
 --
--- Name: SCHEMA public; Type: COMMENT; Schema: -; Owner: pg_database_owner
+-- Name: pg_cron; Type: EXTENSION; Schema: -; Owner: -
 --
 
-COMMENT ON SCHEMA public IS 'standard public schema';
-
+CREATE EXTENSION IF NOT EXISTS pg_cron WITH SCHEMA pg_catalog;
 
 --
--- Name: type_playlist_item; Type: TYPE; Schema: public; Owner: postgres
+-- Name: type_playlist_item; Type: TYPE; Schema: public; Owner: -
 --
 
-CREATE TYPE IF NOT EXISTS public.type_playlist_item AS ENUM (
+CREATE TYPE public.type_playlist_item AS ENUM (
     'video',
     'image',
     'temperature',
@@ -49,13 +35,11 @@ CREATE TYPE IF NOT EXISTS public.type_playlist_item AS ENUM (
 );
 
 
-ALTER TYPE public.type_playlist_item OWNER TO postgres;
-
 --
--- Name: check_screen_limit(uuid); Type: FUNCTION; Schema: public; Owner: postgres
+-- Name: check_screen_limit(uuid); Type: FUNCTION; Schema: public; Owner: -
 --
 
-CREATE OR REPLACE FUNCTION public.check_screen_limit(p_user_id uuid) RETURNS boolean
+CREATE FUNCTION public.check_screen_limit(p_user_id uuid) RETURNS boolean
     LANGUAGE plpgsql SECURITY DEFINER
     AS $$
 DECLARE
@@ -86,13 +70,11 @@ END;
 $$;
 
 
-ALTER FUNCTION public.check_screen_limit(p_user_id uuid) OWNER TO postgres;
-
 --
--- Name: check_storage_limit(bigint); Type: FUNCTION; Schema: public; Owner: postgres
+-- Name: check_storage_limit(bigint); Type: FUNCTION; Schema: public; Owner: -
 --
 
-CREATE OR REPLACE FUNCTION public.check_storage_limit(new_size bigint) RETURNS boolean
+CREATE FUNCTION public.check_storage_limit(new_size bigint) RETURNS boolean
     LANGUAGE plpgsql SECURITY DEFINER
     AS $$
 declare
@@ -123,13 +105,11 @@ end;
 $$;
 
 
-ALTER FUNCTION public.check_storage_limit(new_size bigint) OWNER TO postgres;
-
 --
--- Name: check_storage_limit(uuid, bigint); Type: FUNCTION; Schema: public; Owner: postgres
+-- Name: check_storage_limit(uuid, bigint); Type: FUNCTION; Schema: public; Owner: -
 --
 
-CREATE OR REPLACE FUNCTION public.check_storage_limit(p_user_id uuid, p_file_size bigint) RETURNS boolean
+CREATE FUNCTION public.check_storage_limit(p_user_id uuid, p_file_size bigint) RETURNS boolean
     LANGUAGE plpgsql SECURITY DEFINER
     AS $$
 DECLARE
@@ -156,13 +136,11 @@ END;
 $$;
 
 
-ALTER FUNCTION public.check_storage_limit(p_user_id uuid, p_file_size bigint) OWNER TO postgres;
-
 --
--- Name: count_user_screens(uuid); Type: FUNCTION; Schema: public; Owner: postgres
+-- Name: count_user_screens(uuid); Type: FUNCTION; Schema: public; Owner: -
 --
 
-CREATE OR REPLACE FUNCTION public.count_user_screens(p_user_id uuid) RETURNS integer
+CREATE FUNCTION public.count_user_screens(p_user_id uuid) RETURNS integer
     LANGUAGE sql STABLE
     AS $$
   SELECT COUNT(*)::integer
@@ -171,13 +149,11 @@ CREATE OR REPLACE FUNCTION public.count_user_screens(p_user_id uuid) RETURNS int
 $$;
 
 
-ALTER FUNCTION public.count_user_screens(p_user_id uuid) OWNER TO postgres;
-
 --
--- Name: get_my_client_ids(); Type: FUNCTION; Schema: public; Owner: postgres
+-- Name: get_my_client_ids(); Type: FUNCTION; Schema: public; Owner: -
 --
 
-CREATE OR REPLACE FUNCTION public.get_my_client_ids() RETURNS SETOF uuid
+CREATE FUNCTION public.get_my_client_ids() RETURNS SETOF uuid
     LANGUAGE sql STABLE SECURITY DEFINER
     AS $$
   -- Superadmins/admins veem tudo
@@ -192,13 +168,11 @@ CREATE OR REPLACE FUNCTION public.get_my_client_ids() RETURNS SETOF uuid
 $$;
 
 
-ALTER FUNCTION public.get_my_client_ids() OWNER TO postgres;
-
 --
--- Name: get_user_usage(uuid); Type: FUNCTION; Schema: public; Owner: postgres
+-- Name: get_user_usage(uuid); Type: FUNCTION; Schema: public; Owner: -
 --
 
-CREATE OR REPLACE FUNCTION public.get_user_usage(p_user_id uuid) RETURNS json
+CREATE FUNCTION public.get_user_usage(p_user_id uuid) RETURNS json
     LANGUAGE plpgsql SECURITY DEFINER
     AS $$
 DECLARE
@@ -264,13 +238,11 @@ END;
 $$;
 
 
-ALTER FUNCTION public.get_user_usage(p_user_id uuid) OWNER TO postgres;
-
 --
--- Name: handle_new_user(); Type: FUNCTION; Schema: public; Owner: postgres
+-- Name: handle_new_user(); Type: FUNCTION; Schema: public; Owner: -
 --
 
-CREATE OR REPLACE FUNCTION public.handle_new_user() RETURNS trigger
+CREATE FUNCTION public.handle_new_user() RETURNS trigger
     LANGUAGE plpgsql SECURITY DEFINER
     AS $$
 begin
@@ -281,13 +253,11 @@ end;
 $$;
 
 
-ALTER FUNCTION public.handle_new_user() OWNER TO postgres;
-
 --
--- Name: jwt_sign(jsonb, text, text, bigint); Type: FUNCTION; Schema: public; Owner: postgres
+-- Name: jwt_sign(jsonb, text, text, bigint); Type: FUNCTION; Schema: public; Owner: -
 --
 
-CREATE OR REPLACE FUNCTION public.jwt_sign(payload jsonb, key text, alg text, exp bigint) RETURNS text
+CREATE FUNCTION public.jwt_sign(payload jsonb, key text, alg text, exp bigint) RETURNS text
     LANGUAGE plpgsql SECURITY DEFINER
     AS $$
 begin
@@ -296,13 +266,11 @@ end;
 $$;
 
 
-ALTER FUNCTION public.jwt_sign(payload jsonb, key text, alg text, exp bigint) OWNER TO postgres;
-
 --
--- Name: move_playlist_item_down(uuid); Type: FUNCTION; Schema: public; Owner: postgres
+-- Name: move_playlist_item_down(uuid); Type: FUNCTION; Schema: public; Owner: -
 --
 
-CREATE OR REPLACE FUNCTION public.move_playlist_item_down(p_item_id uuid) RETURNS void
+CREATE FUNCTION public.move_playlist_item_down(p_item_id uuid) RETURNS void
     LANGUAGE plpgsql
     AS $$
 declare
@@ -338,13 +306,11 @@ end;
 $$;
 
 
-ALTER FUNCTION public.move_playlist_item_down(p_item_id uuid) OWNER TO postgres;
-
 --
--- Name: move_playlist_item_up(uuid); Type: FUNCTION; Schema: public; Owner: postgres
+-- Name: move_playlist_item_up(uuid); Type: FUNCTION; Schema: public; Owner: -
 --
 
-CREATE OR REPLACE FUNCTION public.move_playlist_item_up(p_item_id uuid) RETURNS void
+CREATE FUNCTION public.move_playlist_item_up(p_item_id uuid) RETURNS void
     LANGUAGE plpgsql
     AS $$
 declare
@@ -374,13 +340,11 @@ end;
 $$;
 
 
-ALTER FUNCTION public.move_playlist_item_up(p_item_id uuid) OWNER TO postgres;
-
 --
--- Name: playlist_items_after_delete(); Type: FUNCTION; Schema: public; Owner: postgres
+-- Name: playlist_items_after_delete(); Type: FUNCTION; Schema: public; Owner: -
 --
 
-CREATE OR REPLACE FUNCTION public.playlist_items_after_delete() RETURNS trigger
+CREATE FUNCTION public.playlist_items_after_delete() RETURNS trigger
     LANGUAGE plpgsql
     AS $$
 begin
@@ -390,13 +354,11 @@ end;
 $$;
 
 
-ALTER FUNCTION public.playlist_items_after_delete() OWNER TO postgres;
-
 --
--- Name: playlist_items_before_insert(); Type: FUNCTION; Schema: public; Owner: postgres
+-- Name: playlist_items_before_insert(); Type: FUNCTION; Schema: public; Owner: -
 --
 
-CREATE OR REPLACE FUNCTION public.playlist_items_before_insert() RETURNS trigger
+CREATE FUNCTION public.playlist_items_before_insert() RETURNS trigger
     LANGUAGE plpgsql
     AS $$
 begin
@@ -410,13 +372,11 @@ end;
 $$;
 
 
-ALTER FUNCTION public.playlist_items_before_insert() OWNER TO postgres;
-
 --
--- Name: playlist_items_delete_trigger(); Type: FUNCTION; Schema: public; Owner: postgres
+-- Name: playlist_items_delete_trigger(); Type: FUNCTION; Schema: public; Owner: -
 --
 
-CREATE OR REPLACE FUNCTION public.playlist_items_delete_trigger() RETURNS trigger
+CREATE FUNCTION public.playlist_items_delete_trigger() RETURNS trigger
     LANGUAGE plpgsql
     AS $$
 BEGIN
@@ -431,13 +391,11 @@ END;
 $$;
 
 
-ALTER FUNCTION public.playlist_items_delete_trigger() OWNER TO postgres;
-
 --
--- Name: playlist_items_insert_trigger(); Type: FUNCTION; Schema: public; Owner: postgres
+-- Name: playlist_items_insert_trigger(); Type: FUNCTION; Schema: public; Owner: -
 --
 
-CREATE OR REPLACE FUNCTION public.playlist_items_insert_trigger() RETURNS trigger
+CREATE FUNCTION public.playlist_items_insert_trigger() RETURNS trigger
     LANGUAGE plpgsql
     AS $$
 BEGIN
@@ -460,13 +418,11 @@ END;
 $$;
 
 
-ALTER FUNCTION public.playlist_items_insert_trigger() OWNER TO postgres;
-
 --
--- Name: reorder_playlist_items(uuid); Type: FUNCTION; Schema: public; Owner: postgres
+-- Name: reorder_playlist_items(uuid); Type: FUNCTION; Schema: public; Owner: -
 --
 
-CREATE OR REPLACE FUNCTION public.reorder_playlist_items(p_playlist_id uuid) RETURNS void
+CREATE FUNCTION public.reorder_playlist_items(p_playlist_id uuid) RETURNS void
     LANGUAGE plpgsql
     AS $$
 begin
@@ -483,13 +439,11 @@ end;
 $$;
 
 
-ALTER FUNCTION public.reorder_playlist_items(p_playlist_id uuid) OWNER TO postgres;
-
 --
--- Name: update_storage_on_delete(); Type: FUNCTION; Schema: public; Owner: postgres
+-- Name: update_storage_on_delete(); Type: FUNCTION; Schema: public; Owner: -
 --
 
-CREATE OR REPLACE FUNCTION public.update_storage_on_delete() RETURNS trigger
+CREATE FUNCTION public.update_storage_on_delete() RETURNS trigger
     LANGUAGE plpgsql SECURITY DEFINER
     AS $$
 BEGIN
@@ -502,13 +456,11 @@ END;
 $$;
 
 
-ALTER FUNCTION public.update_storage_on_delete() OWNER TO postgres;
-
 --
--- Name: update_storage_on_insert(); Type: FUNCTION; Schema: public; Owner: postgres
+-- Name: update_storage_on_insert(); Type: FUNCTION; Schema: public; Owner: -
 --
 
-CREATE OR REPLACE FUNCTION public.update_storage_on_insert() RETURNS trigger
+CREATE FUNCTION public.update_storage_on_insert() RETURNS trigger
     LANGUAGE plpgsql SECURITY DEFINER
     AS $$
 BEGIN
@@ -521,13 +473,11 @@ END;
 $$;
 
 
-ALTER FUNCTION public.update_storage_on_insert() OWNER TO postgres;
-
 --
--- Name: update_storage_on_update(); Type: FUNCTION; Schema: public; Owner: postgres
+-- Name: update_storage_on_update(); Type: FUNCTION; Schema: public; Owner: -
 --
 
-CREATE OR REPLACE FUNCTION public.update_storage_on_update() RETURNS trigger
+CREATE FUNCTION public.update_storage_on_update() RETURNS trigger
     LANGUAGE plpgsql SECURITY DEFINER
     AS $$
 BEGIN
@@ -540,13 +490,11 @@ END;
 $$;
 
 
-ALTER FUNCTION public.update_storage_on_update() OWNER TO postgres;
-
 --
--- Name: update_updated_at_column(); Type: FUNCTION; Schema: public; Owner: postgres
+-- Name: update_updated_at_column(); Type: FUNCTION; Schema: public; Owner: -
 --
 
-CREATE OR REPLACE FUNCTION public.update_updated_at_column() RETURNS trigger
+CREATE FUNCTION public.update_updated_at_column() RETURNS trigger
     LANGUAGE plpgsql
     AS $$
 BEGIN
@@ -556,17 +504,11 @@ END;
 $$;
 
 
-ALTER FUNCTION public.update_updated_at_column() OWNER TO postgres;
-
-SET default_tablespace = '';
-
-SET default_table_access_method = heap;
-
 --
--- Name: activity_logs; Type: TABLE; Schema: public; Owner: postgres
+-- Name: activity_logs; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE IF NOT EXISTS public.activity_logs (
+CREATE TABLE public.activity_logs (
     id uuid DEFAULT gen_random_uuid() NOT NULL,
     user_id uuid NOT NULL,
     screen_id uuid,
@@ -576,13 +518,11 @@ CREATE TABLE IF NOT EXISTS public.activity_logs (
 );
 
 
-ALTER TABLE public.activity_logs OWNER TO postgres;
-
 --
--- Name: clients; Type: TABLE; Schema: public; Owner: postgres
+-- Name: clients; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE IF NOT EXISTS public.clients (
+CREATE TABLE public.clients (
     id uuid DEFAULT gen_random_uuid() NOT NULL,
     user_id uuid NOT NULL,
     name text NOT NULL,
@@ -594,13 +534,11 @@ CREATE TABLE IF NOT EXISTS public.clients (
 );
 
 
-ALTER TABLE public.clients OWNER TO postgres;
-
 --
--- Name: media_files; Type: TABLE; Schema: public; Owner: postgres
+-- Name: media_files; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE IF NOT EXISTS public.media_files (
+CREATE TABLE public.media_files (
     id uuid DEFAULT gen_random_uuid() NOT NULL,
     user_id uuid,
     filename text NOT NULL,
@@ -614,26 +552,22 @@ CREATE TABLE IF NOT EXISTS public.media_files (
 );
 
 
-ALTER TABLE public.media_files OWNER TO postgres;
-
 --
--- Name: new_device; Type: TABLE; Schema: public; Owner: postgres
+-- Name: new_device; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE IF NOT EXISTS public.new_device (
+CREATE TABLE public.new_device (
     id uuid DEFAULT gen_random_uuid() NOT NULL,
     device_code character varying(6) NOT NULL,
     created_at timestamp with time zone DEFAULT now()
 );
 
 
-ALTER TABLE public.new_device OWNER TO postgres;
-
 --
--- Name: plans; Type: TABLE; Schema: public; Owner: postgres
+-- Name: plans; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE IF NOT EXISTS public.plans (
+CREATE TABLE public.plans (
     id uuid DEFAULT gen_random_uuid() NOT NULL,
     name text NOT NULL,
     price numeric,
@@ -653,13 +587,11 @@ CREATE TABLE IF NOT EXISTS public.plans (
 );
 
 
-ALTER TABLE public.plans OWNER TO postgres;
-
 --
--- Name: playlist_items; Type: TABLE; Schema: public; Owner: postgres
+-- Name: playlist_items; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE IF NOT EXISTS public.playlist_items (
+CREATE TABLE public.playlist_items (
     id uuid DEFAULT gen_random_uuid() NOT NULL,
     playlist_id uuid NOT NULL,
     media_file_id uuid,
@@ -674,13 +606,11 @@ CREATE TABLE IF NOT EXISTS public.playlist_items (
 );
 
 
-ALTER TABLE public.playlist_items OWNER TO postgres;
-
 --
--- Name: playlists; Type: TABLE; Schema: public; Owner: postgres
+-- Name: playlists; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE IF NOT EXISTS public.playlists (
+CREATE TABLE public.playlists (
     id uuid DEFAULT gen_random_uuid() NOT NULL,
     user_id uuid NOT NULL,
     client_id uuid NOT NULL,
@@ -693,13 +623,11 @@ CREATE TABLE IF NOT EXISTS public.playlists (
 );
 
 
-ALTER TABLE public.playlists OWNER TO postgres;
-
 --
--- Name: profiles; Type: TABLE; Schema: public; Owner: postgres
+-- Name: profiles; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE IF NOT EXISTS public.profiles (
+CREATE TABLE public.profiles (
     id uuid NOT NULL,
     full_name text,
     created_at timestamp with time zone DEFAULT now(),
@@ -711,13 +639,11 @@ CREATE TABLE IF NOT EXISTS public.profiles (
 );
 
 
-ALTER TABLE public.profiles OWNER TO postgres;
-
 --
--- Name: screens; Type: TABLE; Schema: public; Owner: postgres
+-- Name: screens; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE IF NOT EXISTS public.screens (
+CREATE TABLE public.screens (
     id uuid DEFAULT gen_random_uuid() NOT NULL,
     client_id uuid NOT NULL,
     name text NOT NULL,
@@ -731,26 +657,22 @@ CREATE TABLE IF NOT EXISTS public.screens (
 );
 
 
-ALTER TABLE public.screens OWNER TO postgres;
-
 --
--- Name: storage_usage; Type: VIEW; Schema: public; Owner: postgres
+-- Name: storage_usage; Type: VIEW; Schema: public; Owner: -
 --
 
-CREATE OR REPLACE VIEW public.storage_usage WITH (security_invoker='true') AS
+CREATE VIEW public.storage_usage WITH (security_invoker='true') AS
  SELECT user_id,
     COALESCE(sum(size_bytes), (0)::numeric) AS total_bytes
    FROM public.media_files
   GROUP BY user_id;
 
 
-ALTER VIEW public.storage_usage OWNER TO postgres;
-
 --
--- Name: subscriptions; Type: TABLE; Schema: public; Owner: postgres
+-- Name: subscriptions; Type: TABLE; Schema: public; Owner: -
 --
 
-CREATE TABLE IF NOT EXISTS public.subscriptions (
+CREATE TABLE public.subscriptions (
     id uuid DEFAULT gen_random_uuid() NOT NULL,
     user_id uuid NOT NULL,
     stripe_customer_id text,
@@ -769,10 +691,4 @@ CREATE TABLE IF NOT EXISTS public.subscriptions (
     CONSTRAINT subscriptions_plan_check CHECK ((plan = ANY (ARRAY['starter'::text, 'pro'::text, 'enterprise'::text])))
 );
 
-
-ALTER TABLE public.subscriptions OWNER TO postgres;
-
---
--- Data for Name: activity_logs; Type: TABLE DATA; Schema: public; Owner: postgres
---
 
