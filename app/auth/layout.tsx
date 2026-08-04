@@ -28,8 +28,14 @@ export default async function AuthLayout({
         {/* Logo / Header */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center gap-2 text-white mb-4">
-            <div className="w-12 h-12 backdrop-blur-sm rounded-xl flex items-center justify-center">
-              <Image src="/icons/Icons/logoquadrada.png" fill alt="JP Mídia" />
+            <div className="relative w-12 h-12 backdrop-blur-sm rounded-xl flex items-center justify-center">
+              <Image
+                src="/icons/Icons/logoquadrada.png"
+                fill
+                sizes="48px"
+                alt="JP Mídia"
+                className="object-contain"
+              />
             </div>
             <span className="text-2xl font-bold">
               <span className="text-3xl">M</span>

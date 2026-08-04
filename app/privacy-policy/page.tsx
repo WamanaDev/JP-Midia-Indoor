@@ -1,5 +1,6 @@
 "use client";
 
+import { ArrowLeft } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -7,13 +8,22 @@ export default function PrivacyPolicyPage() {
   return (
     <div className="bg-gray-50 text-black min-h-screen py-16 px-4">
       <div className="max-w-4xl mx-auto bg-white rounded-2xl shadow-xl p-8 md:p-12">
+        {/* Voltar */}
+        <Link
+          href="/"
+          className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-[#3B82F6] transition-colors mb-8"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          Voltar para o início
+        </Link>
+
         {/* Logo */}
         <div className="flex justify-center mb-8">
           <div className="bg-white p-2 rounded-lg">
             <Link href="/">
               <Image
                 src="/icons/Icons/logoquadrada2.png"
-                alt="JP Dash"
+                alt="JP Mídia Indoor"
                 width={64}
                 height={64}
               />
@@ -33,11 +43,10 @@ export default function PrivacyPolicyPage() {
         <div className="space-y-8 text-gray-700 leading-relaxed">
           <section>
             <p>
-              A <strong>JP Dash</strong>, operada pela <strong>JP Mídia</strong>
-              , respeita a sua privacidade e está comprometida com a proteção
-              dos seus dados pessoais. Esta Política explica como coletamos,
-              utilizamos e protegemos suas informações ao utilizar nossa
-              plataforma.
+              A <strong>JP Mídia Indoor</strong> respeita a sua privacidade e
+              está comprometida com a proteção dos seus dados pessoais. Esta
+              Política explica como coletamos, utilizamos e protegemos suas
+              informações ao utilizar nossa plataforma.
             </p>
           </section>
 
@@ -46,10 +55,10 @@ export default function PrivacyPolicyPage() {
               1. Quem somos
             </h2>
             <p>
-              O JP Dash é uma plataforma digital voltada ao gerenciamento de
-              conteúdos, telas, playlists e mídias digitais, oferecendo recursos
-              de autenticação, personalização e integração com serviços de
-              terceiros.
+              A JP Mídia Indoor é uma plataforma digital voltada ao
+              gerenciamento de conteúdos, telas, playlists e mídias digitais,
+              oferecendo recursos de autenticação, personalização e
+              integração com serviços de terceiros.
             </p>
           </section>
 
@@ -72,10 +81,9 @@ export default function PrivacyPolicyPage() {
               3. Login social
             </h2>
             <p>
-              Caso você utilize login via <strong>Google</strong> ou{" "}
-              <strong>Discord</strong>, poderemos receber informações básicas
-              como nome, e-mail e foto de perfil, fornecidas diretamente por
-              esses serviços.
+              Caso você utilize login via <strong>Google</strong>, poderemos
+              receber informações básicas como nome, e-mail e foto de perfil,
+              fornecidas diretamente pelo serviço.
             </p>
           </section>
 
@@ -173,7 +181,8 @@ export default function PrivacyPolicyPage() {
 
         {/* Rodapé */}
         <div className="mt-12 text-center text-sm text-gray-400">
-          © {new Date().getFullYear()} JP Mídia • Todos os direitos reservados
+          © {new Date().getFullYear()} JP Mídia Indoor • Todos os direitos
+          reservados
         </div>
       </div>
     </div>

@@ -51,16 +51,6 @@ export function Footer() {
                   Planos e Preços
                 </a>
               </li>
-              <li>
-                <a href="#" className="hover:text-white transition-colors">
-                  Demonstração
-                </a>
-              </li>
-              <li>
-                <a href="#" className="hover:text-white transition-colors">
-                  Documentação da API
-                </a>
-              </li>
             </ul>
           </div>
 
@@ -68,22 +58,18 @@ export function Footer() {
             <h3 className="text-white font-semibold mb-4">Empresa</h3>
             <ul className="space-y-3">
               <li>
-                <a href="#" className="hover:text-white transition-colors">
-                  Sobre Nós
-                </a>
-              </li>
-              <li>
-                <a href="#" className="hover:text-white transition-colors">
-                  Blog & Notícias
-                </a>
-              </li>
-              <li>
-                <a href="#" className="hover:text-white transition-colors">
+                <a
+                  href="mailto:contato@jpmidia.com"
+                  className="hover:text-white transition-colors"
+                >
                   Contato
                 </a>
               </li>
               <li>
-                <a href="#" className="hover:text-white transition-colors">
+                <a
+                  href="mailto:contato@jpmidia.com"
+                  className="hover:text-white transition-colors"
+                >
                   Central de Suporte
                 </a>
               </li>
@@ -93,7 +79,8 @@ export function Footer() {
 
         <div className="pt-8 border-t border-gray-800 flex flex-col sm:flex-row justify-between items-center gap-4">
           <p className="text-gray-400 text-sm">
-            © 2025 JP Mídia Indoor. Todos os direitos reservados.
+            © {new Date().getFullYear()} JP Mídia Indoor. Todos os direitos
+            reservados.
           </p>
 
           <div className="flex gap-6 text-sm">

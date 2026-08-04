@@ -1,3 +1,4 @@
+import { ArrowLeft } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -5,13 +6,22 @@ export default function PoliticaDeCookiesPage() {
   return (
     <div className="bg-gray-50 text-black min-h-screen py-16 px-4">
       <div className="max-w-4xl mx-auto bg-white rounded-2xl shadow-xl p-8 md:p-12">
+        {/* Voltar */}
+        <Link
+          href="/"
+          className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-[#3B82F6] transition-colors mb-8"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          Voltar para o início
+        </Link>
+
         {/* Logo */}
         <div className="flex justify-center mb-8">
           <div className="bg-white p-2 rounded-lg">
             <Link href="/">
               <Image
                 src="/icons/Icons/logoquadrada2.png"
-                alt="JP Dash"
+                alt="JP Mídia Indoor"
                 width={64}
                 height={64}
               />
@@ -31,9 +41,9 @@ export default function PoliticaDeCookiesPage() {
         <div className="space-y-8 text-gray-700 leading-relaxed">
           <section>
             <p>
-              Esta Política de Cookies explica como o <strong>JP Dash</strong>,
-              operado pela <strong>JP Mídia Indoor</strong>, utiliza cookies e
-              tecnologias semelhantes quando você acessa nossa plataforma.
+              Esta Política de Cookies explica como a{" "}
+              <strong>JP Mídia Indoor</strong> utiliza cookies e tecnologias
+              semelhantes quando você acessa nossa plataforma.
             </p>
           </section>
 
@@ -70,20 +80,20 @@ export default function PoliticaDeCookiesPage() {
               </li>
               <li>
                 <strong>Cookies de terceiros:</strong> podem ser definidos por
-                serviços integrados, como autenticação via Google ou Discord.
+                serviços integrados, como autenticação via Google.
               </li>
             </ul>
           </section>
 
           <section>
             <h2 className="text-xl font-semibold text-[#111827] mb-2">
-              3. Cookies utilizados pelo JP Dash
+              3. Cookies utilizados pela JP Mídia Indoor
             </h2>
             <p>
-              O JP Dash utiliza cookies principalmente para manter usuários
-              autenticados, proteger contas, prevenir acessos não autorizados e
-              garantir o correto funcionamento das funcionalidades da
-              plataforma.
+              A JP Mídia Indoor utiliza cookies principalmente para manter
+              usuários autenticados, proteger contas, prevenir acessos não
+              autorizados e garantir o correto funcionamento das
+              funcionalidades da plataforma.
             </p>
             <p className="mt-2">
               A autenticação é realizada por meio do <strong>Supabase</strong>,
@@ -99,7 +109,7 @@ export default function PoliticaDeCookiesPage() {
             <p>
               Você pode configurar seu navegador para bloquear ou alertar sobre
               o uso de cookies. No entanto, a desativação de cookies essenciais
-              pode comprometer o funcionamento do JP Dash.
+              pode comprometer o funcionamento da JP Mídia Indoor.
             </p>
           </section>
 
@@ -108,9 +118,9 @@ export default function PoliticaDeCookiesPage() {
               5. Consentimento
             </h2>
             <p>
-              Ao utilizar o JP Dash, você concorda com o uso de cookies conforme
-              descrito nesta Política. Quando exigido por lei, poderemos
-              solicitar seu consentimento explícito.
+              Ao utilizar a JP Mídia Indoor, você concorda com o uso de
+              cookies conforme descrito nesta Política. Quando exigido por
+              lei, poderemos solicitar seu consentimento explícito.
             </p>
           </section>
 
@@ -120,8 +130,8 @@ export default function PoliticaDeCookiesPage() {
             </h2>
             <p>
               Esta Política de Cookies pode ser atualizada periodicamente.
-              Recomendamos que você revise este documento regularmente para se
-              manter informado.
+              Recomendamos que você revise este documento regularmente para
+              se manter informado.
             </p>
           </section>
 
@@ -131,14 +141,17 @@ export default function PoliticaDeCookiesPage() {
             </h2>
             <p>
               Em caso de dúvidas sobre esta Política de Cookies, entre em
-              contato pelos canais oficiais do <strong>JP Dash</strong>.
+              contato:
+              <br />
+              <strong>E-mail:</strong> contato@jpmidia.com
             </p>
           </section>
         </div>
 
         {/* Rodapé */}
         <div className="mt-12 text-center text-sm text-gray-400">
-          © {new Date().getFullYear()} JP Mídia • Todos os direitos reservados
+          © {new Date().getFullYear()} JP Mídia Indoor • Todos os direitos
+          reservados
         </div>
       </div>
     </div>

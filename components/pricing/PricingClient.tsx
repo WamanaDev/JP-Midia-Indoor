@@ -321,16 +321,29 @@ export function PricingClient({
         </p>
       </div>
 
-      {/* Plans Grid - 3 primeiros planos */}
-      <div className="grid md:grid-cols-3 gap-8 mb-8">
-        {plans.slice(0, 3).map((plan) => renderPlanCard(plan))}
-      </div>
-
-      {/* Último plano centralizado */}
-      {plans.length > 3 && (
-        <div className="flex justify-center">
-          <div className="w-full md:w-1/3">{renderPlanCard(plans[3])}</div>
+      {plans.length === 0 ? (
+        <div className="text-center py-16 px-4 bg-gray-50 dark:bg-[#1F2937] rounded-2xl border border-gray-200 dark:border-gray-700">
+          <p className="text-lg font-medium text-[#111827] dark:text-white mb-2">
+            Nossos planos estão sendo atualizados
+          </p>
+          <p className="text-gray-600 dark:text-gray-400">
+            Tente novamente em instantes ou fale com a gente para saber mais.
+          </p>
         </div>
+      ) : (
+        <>
+          {/* Plans Grid - 3 primeiros planos */}
+          <div className="grid md:grid-cols-3 gap-8 mb-8">
+            {plans.slice(0, 3).map((plan) => renderPlanCard(plan))}
+          </div>
+
+          {/* Último plano centralizado */}
+          {plans.length > 3 && (
+            <div className="flex justify-center">
+              <div className="w-full md:w-1/3">{renderPlanCard(plans[3])}</div>
+            </div>
+          )}
+        </>
       )}
 
       {/* Modal de Troca de Plano */}

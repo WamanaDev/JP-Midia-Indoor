@@ -43,7 +43,7 @@ export function CTA({ user }: CTAProps) {
           )}
 
           <a
-            href="#contact"
+            href="mailto:contato@jpmidia.com"
             className="inline-flex items-center justify-center px-8 py-4 text-lg font-semibold text-white bg-white/10 backdrop-blur-sm border-2 border-white/30 rounded-lg hover:bg-white/20 transition-all"
           >
             Falar com Vendas

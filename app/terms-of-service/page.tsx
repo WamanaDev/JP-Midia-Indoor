@@ -1,5 +1,6 @@
 "use client";
 
+import { ArrowLeft } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -7,13 +8,22 @@ export default function TermsOfServicePage() {
   return (
     <div className="bg-gray-50 text-black min-h-screen py-16 px-4">
       <div className="max-w-4xl mx-auto bg-white rounded-2xl shadow-xl p-8 md:p-12">
+        {/* Voltar */}
+        <Link
+          href="/"
+          className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-[#3B82F6] transition-colors mb-8"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          Voltar para o início
+        </Link>
+
         {/* Logo */}
         <div className="flex justify-center mb-8">
           <div className="bg-white p-2 rounded-lg">
             <Link href="/">
               <Image
                 src="/icons/Icons/logoquadrada2.png"
-                alt="JP Dash"
+                alt="JP Mídia Indoor"
                 width={64}
                 height={64}
               />
@@ -33,10 +43,10 @@ export default function TermsOfServicePage() {
         <div className="space-y-8 text-gray-700 leading-relaxed">
           <section>
             <p>
-              Bem-vindo ao <strong>JP Dash</strong>. Estes Termos de Serviço
-              regulam o uso da nossa plataforma, operada pela{" "}
-              <strong>JP Mídia</strong>. Ao acessar ou utilizar o JP Dash, você
-              concorda integralmente com estes Termos.
+              Bem-vindo à <strong>JP Mídia Indoor</strong>. Estes Termos de
+              Serviço regulam o uso da nossa plataforma. Ao acessar ou
+              utilizar a JP Mídia Indoor, você concorda integralmente com
+              estes Termos.
             </p>
           </section>
 
@@ -56,9 +66,10 @@ export default function TermsOfServicePage() {
               2. Sobre o serviço
             </h2>
             <p>
-              O JP Dash é uma plataforma de gerenciamento de conteúdos digitais,
-              permitindo a organização de telas, playlists, mídias e usuários,
-              com recursos de autenticação e personalização.
+              A JP Mídia Indoor é uma plataforma de gerenciamento de
+              conteúdos digitais, permitindo a organização de telas,
+              playlists, mídias e usuários, com recursos de autenticação e
+              personalização.
             </p>
           </section>
 
@@ -81,10 +92,10 @@ export default function TermsOfServicePage() {
               4. Login social
             </h2>
             <p>
-              O JP Dash permite login via <strong>Google</strong> e{" "}
-              <strong>Discord</strong>. Ao optar por esses métodos, você
-              autoriza o recebimento das informações necessárias para
-              autenticação, de acordo com as políticas desses serviços.
+              A JP Mídia Indoor permite login via <strong>Google</strong>. Ao
+              optar por esse método, você autoriza o recebimento das
+              informações necessárias para autenticação, de acordo com as
+              políticas desse serviço.
             </p>
           </section>
 
@@ -106,8 +117,9 @@ export default function TermsOfServicePage() {
             </h2>
             <p>
               Você é o único responsável pelos conteúdos que cria, envia ou
-              gerencia na plataforma. O JP Dash não se responsabiliza por
-              conteúdos ilegais, ofensivos ou que violem direitos de terceiros.
+              gerencia na plataforma. A JP Mídia Indoor não se responsabiliza
+              por conteúdos ilegais, ofensivos ou que violem direitos de
+              terceiros.
             </p>
           </section>
 
@@ -127,10 +139,10 @@ export default function TermsOfServicePage() {
               8. Limitação de responsabilidade
             </h2>
             <p>
-              O JP Dash é fornecido &quot;como está&quot;. Não garantimos que o
-              serviço estará sempre disponível ou livre de erros. Não nos
-              responsabilizamos por danos diretos ou indiretos decorrentes do
-              uso da plataforma.
+              A JP Mídia Indoor é fornecida &quot;como está&quot;. Não
+              garantimos que o serviço estará sempre disponível ou livre de
+              erros. Não nos responsabilizamos por danos diretos ou indiretos
+              decorrentes do uso da plataforma.
             </p>
           </section>
 
@@ -139,8 +151,9 @@ export default function TermsOfServicePage() {
               9. Alterações no serviço
             </h2>
             <p>
-              Podemos modificar, suspender ou descontinuar funcionalidades do JP
-              Dash a qualquer momento, visando melhorias ou ajustes técnicos.
+              Podemos modificar, suspender ou descontinuar funcionalidades da
+              JP Mídia Indoor a qualquer momento, visando melhorias ou
+              ajustes técnicos.
             </p>
           </section>
 
@@ -168,7 +181,8 @@ export default function TermsOfServicePage() {
 
         {/* Rodapé */}
         <div className="mt-12 text-center text-sm text-gray-400">
-          © {new Date().getFullYear()} JP Mídia • Todos os direitos reservados
+          © {new Date().getFullYear()} JP Mídia Indoor • Todos os direitos
+          reservados
         </div>
       </div>
     </div>

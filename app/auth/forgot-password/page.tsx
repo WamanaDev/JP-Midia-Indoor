@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 import { Mail, AlertCircle, CheckCircle } from "lucide-react";
 
@@ -88,6 +89,16 @@ export default function ForgotPasswordPage() {
           {loading ? "Enviando..." : "Enviar e-mail"}
         </button>
       </form>
+
+      {/* Voltar para o login */}
+      <div className="mt-6 text-center">
+        <Link
+          href="/auth/signin"
+          className="text-[#3B82F6] hover:text-[#1E3A8A] font-medium transition-colors"
+        >
+          Voltar para o login
+        </Link>
+      </div>
     </div>
   );
 }

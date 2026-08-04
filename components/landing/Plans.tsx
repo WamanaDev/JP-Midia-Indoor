@@ -26,6 +26,17 @@ export function Plans({ profile, plans, user }: PricingProps) {
         </div>
 
         {/* GRID */}
+        {!plans || plans.length === 0 ? (
+          <div className="text-center py-16 px-4 bg-gray-50 rounded-2xl border border-gray-200">
+            <p className="text-lg font-medium text-[#111827] mb-2">
+              Nossos planos estão sendo atualizados
+            </p>
+            <p className="text-gray-600">
+              Tente novamente em instantes ou fale com a gente para saber
+              mais.
+            </p>
+          </div>
+        ) : (
         <div className="grid md:grid-cols-4 gap-8">
           {plans &&
             plans.map((plan, index) => {
@@ -94,7 +105,7 @@ export function Plans({ profile, plans, user }: PricingProps) {
                       }`}
                     >
                       {plan.price === null
-                        ? "Personalizado"
+                        ? plan.price_text || "Personalizado"
                         : `R$${plan.price}`}
                     </span>
                     <span
@@ -159,6 +170,7 @@ export function Plans({ profile, plans, user }: PricingProps) {
               );
             })}
         </div>
+        )}
       </div>
     </section>
   );
