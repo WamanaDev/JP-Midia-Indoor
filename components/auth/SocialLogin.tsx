@@ -7,12 +7,21 @@ export default function SocialAuth() {
   const supabase = createClient();
 
   const signIn = async (provider: "google" | "discord") => {
-    await supabase.auth.signInWithOAuth({
-      provider,
-      options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
-      },
-    });
+    const redirectTo =
+      typeof window !== "undefined"
+        ? `${window.location.origin}/auth/callback`
+        : `${process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"}/auth/callback`;
+
+    try {
+      await supabase.auth.signInWithOAuth({
+        provider,
+        options: {
+          redirectTo,
+        },
+      });
+    } catch (error) {
+      console.error("OAuth sign-in error:", error);
+    }
   };
 
   return (
