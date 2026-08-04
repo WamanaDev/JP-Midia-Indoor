@@ -15,7 +15,7 @@ if (!supabaseUrl || !supabaseKey) {
 const resolvedSupabaseUrl = supabaseUrl;
 const resolvedSupabaseKey = supabaseKey;
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   let supabaseResponse = NextResponse.next({
     request,
   });
