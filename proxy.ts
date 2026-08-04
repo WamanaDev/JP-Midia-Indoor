@@ -1,14 +1,28 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const supabaseKey =
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ??
+  process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY;
+
+if (!supabaseUrl || !supabaseKey) {
+  throw new Error(
+    "Supabase environment variables are not configured. Set NEXT_PUBLIC_SUPABASE_URL and either NEXT_PUBLIC_SUPABASE_ANON_KEY or NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY.",
+  );
+}
+
+const resolvedSupabaseUrl = supabaseUrl;
+const resolvedSupabaseKey = supabaseKey;
+
 export async function proxy(request: NextRequest) {
   let supabaseResponse = NextResponse.next({
     request,
   });
 
   const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    resolvedSupabaseUrl,
+    resolvedSupabaseKey,
     {
       cookies: {
         getAll() {
@@ -16,17 +30,17 @@ export async function proxy(request: NextRequest) {
         },
         setAll(cookiesToSet) {
           cookiesToSet.forEach(({ name, value }) =>
-            request.cookies.set(name, value)
+            request.cookies.set(name, value),
           );
           supabaseResponse = NextResponse.next({
             request,
           });
           cookiesToSet.forEach(({ name, value, options }) =>
-            supabaseResponse.cookies.set(name, value, options)
+            supabaseResponse.cookies.set(name, value, options),
           );
         },
       },
-    }
+    },
   );
 
   const pathname = request.nextUrl.pathname;
@@ -54,7 +68,7 @@ export async function proxy(request: NextRequest) {
   // Rotas protegidas que requerem autenticação
   const protectedRoutes = ["/dashboard"];
   const isProtectedRoute = protectedRoutes.some((route) =>
-    pathname.startsWith(route)
+    pathname.startsWith(route),
   );
 
   if (isProtectedRoute && !user) {
@@ -123,7 +137,7 @@ export async function proxy(request: NextRequest) {
                 message: `Você atingiu o limite de ${maxScreens} telas do seu plano. Faça upgrade para criar mais telas.`,
                 upgradeUrl: "/pricing",
               },
-              { status: 403 }
+              { status: 403 },
             );
           }
         }
@@ -176,7 +190,7 @@ export async function proxy(request: NextRequest) {
                 message: `Você atingiu o limite de ${maxStorageGB}GB do seu plano. Faça upgrade para mais armazenamento.`,
                 upgradeUrl: "/pricing",
               },
-              { status: 403 }
+              { status: 403 },
             );
           }
         }
