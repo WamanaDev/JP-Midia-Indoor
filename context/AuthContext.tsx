@@ -31,17 +31,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const supabase = createClient(); // <-- cria o client aqui
 
   useEffect(() => {
-    const getSession = async () => {
-      const { data } = await supabase.auth.getSession();
-      setUser(data.session?.user ?? null);
+    const loadUser = async () => {
+      const { data, error } = await supabase.auth.getUser();
+      setUser(error ? null : data.user);
       setLoading(false);
     };
 
-    getSession();
+    loadUser();
 
     const { data: listener } = supabase.auth.onAuthStateChange(
       (_event, session) => {
-        setUser(session?.user ?? null);
+        if (!session) {
+          setUser(null);
+          return;
+        }
+        supabase.auth.getUser().then(({ data, error }) => {
+          setUser(error ? null : data.user);
+        });
       }
     );
 

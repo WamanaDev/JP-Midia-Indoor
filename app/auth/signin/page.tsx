@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { LogIn, AlertCircle } from "lucide-react";
 import SocialAuth from "@/components/auth/SocialLogin";
+import { translateAuthError } from "@/utils/supabase/auth-errors";
 
 export default function SignInPage() {
   const [email, setEmail] = useState("");
@@ -24,11 +25,7 @@ export default function SignInPage() {
     const err = await signIn(email, password);
 
     if (err) {
-      setError(
-        err.message === "Invalid login credentials"
-          ? "Email ou senha incorretos"
-          : "Erro ao fazer login. Tente novamente."
-      );
+      setError(translateAuthError(err, "pt"));
       setLoading(false);
       return;
     }
