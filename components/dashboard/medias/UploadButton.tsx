@@ -1,8 +1,8 @@
 "use client";
 
+import { uploadMediaAction } from "@/app/dashboard/medias/actions";
 import { LimitReachedModal } from "@/components/dashboard/LimitReachedModal";
 import { useCheckLimits } from "@/hooks/useCheckLimits";
-import { createClient } from "@/utils/supabase/client";
 import { AlertCircle, Upload } from "lucide-react";
 import { useRef, useState } from "react";
 
@@ -46,23 +46,11 @@ export default function UploadButton() {
   const uploadFile = async (file: File) => {
     try {
       setUploading(true);
-      const supabase = createClient();
 
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (!user) throw new Error("Usuário não autenticado");
+      const formData = new FormData();
+      formData.append("file", file);
 
-      // Gerar nome único para o arquivo
-      const fileExt = file.name.split(".").pop();
-      const fileName = `${user.id}/${Date.now()}.${fileExt}`;
-
-      // Upload para o Supabase Storage
-      const { error: uploadError } = await supabase.storage
-        .from("screens")
-        .upload(fileName, file);
-
-      if (uploadError) throw uploadError;
+      await uploadMediaAction(formData);
 
       console.log("✅ Upload realizado com sucesso!");
 

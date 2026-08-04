@@ -23,7 +23,7 @@ export function Medias({ medias }: Props) {
         <UploadButton />
       </header>
 
-      {medias && medias.length === 0 ? (
+      {!medias || medias.length === 0 ? (
         <div className="text-center p-12 border rounded-xl">
           <Img className="mx-auto w-12 h-12 text-gray-400" />
           <p className="mt-4 text-gray-500">Nenhuma mídia cadastrada</p>

@@ -75,7 +75,7 @@ export async function uploadMediaAction(formData: FormData) {
     if (error) throw error;
 
     // 🔄 Revalidar rota
-    revalidatePath("/dashboard/media");
+    revalidatePath("/dashboard/medias");
 
     return {
       success: true,
@@ -121,7 +121,7 @@ export async function deleteMediaAction(key: string, id: string) {
     .eq("user_id", user.id);
 
   // 🔄 Revalidar rota
-  revalidatePath("/dashboard/media");
+  revalidatePath("/dashboard/medias");
 
   return { success: true };
 }
