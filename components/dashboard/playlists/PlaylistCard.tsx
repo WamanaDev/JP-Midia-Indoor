@@ -137,7 +137,18 @@ export function PlaylistCard({ playlist, onEdit }: Props) {
             >
               <Edit2 className="w-5 h-5 text-blue-500 dark:text-blue-400" />
             </button>
-            <form action={() => deletePlaylistAction(playlist.id)}>
+            <form
+              action={() => deletePlaylistAction(playlist.id)}
+              onSubmit={(e) => {
+                if (
+                  !confirm(
+                    `Tem certeza que deseja excluir a playlist "${playlist.name}"? Essa ação não pode ser desfeita.`
+                  )
+                ) {
+                  e.preventDefault();
+                }
+              }}
+            >
               <button
                 className="cursor-pointer p-2 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
                 title="Excluir"

@@ -92,6 +92,9 @@ export default function TimelineTab({ items, images, videos }: Props) {
   };
 
   const handleDelete = async (item: PlaylistItems) => {
+    if (!confirm("Tem certeza que deseja remover este item da playlist?")) {
+      return;
+    }
     setError(null);
     try {
       await deletePlaylistItem(item);
