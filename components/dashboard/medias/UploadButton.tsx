@@ -3,6 +3,7 @@
 import { uploadMediaAction } from "@/app/dashboard/medias/actions";
 import { LimitReachedModal } from "@/components/dashboard/LimitReachedModal";
 import { useCheckLimits } from "@/hooks/useCheckLimits";
+import { generateVideoThumbnail } from "@/utils/generateVideoThumbnail";
 import { AlertCircle, Upload } from "lucide-react";
 import { useRef, useState } from "react";
 
@@ -49,6 +50,18 @@ export default function UploadButton() {
 
       const formData = new FormData();
       formData.append("file", file);
+
+      // Gera a thumbnail a partir do arquivo local (sem depender de CORS
+      // do R2, já que ainda não foi enviado a lugar nenhum). Se falhar,
+      // segue o upload sem thumbnail em vez de bloquear tudo.
+      if (file.type.startsWith("video/")) {
+        try {
+          const thumbBlob = await generateVideoThumbnail(file);
+          formData.append("thumbnail", thumbBlob, "thumbnail.jpg");
+        } catch (thumbErr) {
+          console.error("⚠️ Não foi possível gerar a thumbnail:", thumbErr);
+        }
+      }
 
       await uploadMediaAction(formData);
 

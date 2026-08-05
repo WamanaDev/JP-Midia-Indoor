@@ -4,7 +4,6 @@ import { deleteMediaAction } from "@/app/dashboard/medias/actions";
 import { Media } from "@/interfaces/Medias";
 import { Video, Eye, Trash2, Image as Img } from "lucide-react";
 import Image from "next/image";
-import { useEffect, useState } from "react";
 
 interface Props {
   media: Media;
@@ -14,63 +13,10 @@ interface Props {
 export function MediaCard({ media, onPreview }: Props) {
   const isImage = media.mime_type.startsWith("image/");
   const isVideo = media.mime_type.startsWith("video");
-  const [url, setUrl] = useState(() => {
-    if (isImage) return media.storage_path;
-    if (isVideo && media.thumbnail_path) return media.thumbnail_path;
-    return "";
-  });
-  const generateVideoThumbnail = (videoUrl: string): Promise<Blob> => {
-    return new Promise((resolve, reject) => {
-      const video = document.createElement("video");
-      video.crossOrigin = "anonymous";
-      video.src = videoUrl;
-      video.muted = true;
-
-      video.addEventListener("loadeddata", () => {
-        video.currentTime = 0.5;
-      });
-
-      video.addEventListener("seeked", () => {
-        const canvas = document.createElement("canvas");
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
-        const ctx = canvas.getContext("2d");
-
-        if (!ctx) return reject("Canvas error");
-
-        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-        canvas.toBlob(
-          (blob) => (blob ? resolve(blob) : reject("Could not generate blob")),
-          "image/jpeg",
-          0.9
-        );
-      });
-
-      video.onerror = () => reject("Video load error");
-    });
-  };
-  useEffect(() => {
-    if (!isVideo && !media.thumbnail_path) return;
-
-    let active = true;
-    let objectUrl: string | null = null;
-
-    generateVideoThumbnail(media.storage_path)
-      .then((blob) => {
-        if (!active) return;
-        objectUrl = URL.createObjectURL(blob);
-        setUrl(objectUrl);
-      })
-      .catch(console.error);
-
-    return () => {
-      active = false;
-      if (objectUrl) {
-        URL.revokeObjectURL(objectUrl);
-      }
-    };
-  }, [media.storage_path, isVideo, media.thumbnail_path]);
+  // Thumbnails de vídeo são geradas no upload (ver UploadButton); sem uma
+  // (upload antigo ou geração falhou), mostramos o ícone de vídeo em vez
+  // de tentar renderizar o arquivo de vídeo como imagem.
+  const url = isImage ? media.storage_path : media.thumbnail_path || "";
 
   const handleDelete = async () => {
     if (!confirm(`Deseja realmente deletar "${media.original_name}"?`)) return;

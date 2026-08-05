@@ -7,6 +7,7 @@ import {
   Clock,
   ArrowUp,
   ArrowDown,
+  Video as VideoIcon,
 } from "lucide-react";
 import Image from "next/image";
 import { getMediaCategoryByType } from "./media.config";
@@ -31,20 +32,35 @@ export function PlaylistItemCard({
   const mediaMeta = getMediaCategoryByType(playlistItem.type);
   let preview;
   if (playlistItem.media_file_id && playlistItem.media_files) {
-    let url;
+    const isVideo = playlistItem.media_files.mime_type?.startsWith("video");
+
     if (playlistItem.media_files.thumbnail_path) {
-      url = encodeURI(playlistItem.media_files.thumbnail_path);
+      preview = (
+        <Image
+          className="rounded border"
+          src={encodeURI(playlistItem.media_files.thumbnail_path)}
+          fill
+          alt={playlistItem.media_files.original_name}
+        />
+      );
+    } else if (isVideo) {
+      // Vídeo sem thumbnail gerada (upload antigo, ou a geração falhou) —
+      // não dá pra renderizar o arquivo de vídeo como <Image>.
+      preview = (
+        <div className="w-full h-full flex items-center justify-center bg-gray-100 dark:bg-gray-900 rounded border">
+          <VideoIcon className="w-10 h-10 text-gray-400" />
+        </div>
+      );
     } else {
-      url = encodeURI(playlistItem.media_files.storage_path);
+      preview = (
+        <Image
+          className="rounded border"
+          src={encodeURI(playlistItem.media_files.storage_path)}
+          fill
+          alt={playlistItem.media_files.original_name}
+        />
+      );
     }
-    preview = (
-      <Image
-        className="rounded border"
-        src={url}
-        fill
-        alt={playlistItem.media_files.original_name}
-      />
-    );
   } else {
     if (playlistItem.type === "news") {
       preview = (
