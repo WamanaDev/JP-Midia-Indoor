@@ -5,14 +5,27 @@ import { revalidatePath } from "next/cache";
 
 export async function deleteScreenAction(id: string) {
   const supabase = await createClient();
-  await supabase.from("screens").delete().eq("id", id);
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) throw new Error("Usuário não autenticado");
+
+  await supabase.from("screens").delete().eq("id", id).eq("user_id", user.id);
   revalidatePath("/dashboard/screens");
 }
 
 export async function toggleScreenAction(id: string, isActive: boolean) {
   const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) throw new Error("Usuário não autenticado");
 
-  await supabase.from("screens").update({ is_active: !isActive }).eq("id", id);
+  await supabase
+    .from("screens")
+    .update({ is_active: !isActive })
+    .eq("id", id)
+    .eq("user_id", user.id);
 
   revalidatePath("/dashboard/screens");
 }
@@ -72,7 +85,11 @@ export async function upsertScreenAction(formData: FormData) {
   try {
     // 3️⃣ Inserir ou atualizar screen
     if (id) {
-      await supabase.from("screens").update(payload).eq("id", id);
+      await supabase
+        .from("screens")
+        .update(payload)
+        .eq("id", id)
+        .eq("user_id", user.id);
       await supabase.from("activity_logs").insert({
         user_id: user.id,
         action: `Screen "${payload.name}" atualizada`,

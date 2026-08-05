@@ -5,11 +5,38 @@ import { PlaylistItemForm, PlaylistItems } from "@/interfaces/Playlists";
 import { createClient } from "@/utils/supabase/server";
 import { revalidatePath } from "next/cache";
 
+async function getAuthedUser(supabase: Awaited<ReturnType<typeof createClient>>) {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) throw new Error("Usuário não autenticado");
+  return user;
+}
+
+// playlist_items has no user_id of its own — ownership is indirect via
+// its parent playlist, so every mutation here has to check that instead.
+async function assertOwnsPlaylist(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  userId: string,
+  playlistId: string
+) {
+  const { data } = await supabase
+    .from("playlists")
+    .select("id")
+    .eq("id", playlistId)
+    .eq("user_id", userId)
+    .single();
+
+  if (!data) throw new Error("Permissão negada");
+}
+
 export async function createPlaylistItem(
   playlistId: string,
   data: PlaylistItemForm
 ) {
   const supabase = await createClient();
+  const user = await getAuthedUser(supabase);
+  await assertOwnsPlaylist(supabase, user.id, playlistId);
 
   const { error } = await supabase.from("playlist_items").insert({
     playlist_id: playlistId,
@@ -31,6 +58,16 @@ export async function createPlaylistItem(
 
 export async function deletePlaylistItem(playlistItem: PlaylistItems) {
   const supabase = await createClient();
+  const user = await getAuthedUser(supabase);
+
+  const { data: item } = await supabase
+    .from("playlist_items")
+    .select("playlist_id")
+    .eq("id", playlistItem.id)
+    .single();
+  if (!item) throw new Error("Item não encontrado");
+
+  await assertOwnsPlaylist(supabase, user.id, item.playlist_id);
 
   const { error } = await supabase
     .from("playlist_items")
@@ -39,7 +76,7 @@ export async function deletePlaylistItem(playlistItem: PlaylistItems) {
 
   if (error) throw new Error(error.message);
 
-  revalidatePath(`/dashboard/playlists/${playlistItem.playlist_id}`);
+  revalidatePath(`/dashboard/playlists/${item.playlist_id}`);
 }
 
 export async function updatePlaylistItem(
@@ -47,6 +84,16 @@ export async function updatePlaylistItem(
   data: PlaylistItemForm
 ) {
   const supabase = await createClient();
+  const user = await getAuthedUser(supabase);
+
+  const { data: item } = await supabase
+    .from("playlist_items")
+    .select("playlist_id")
+    .eq("id", playlistItemId)
+    .single();
+  if (!item) throw new Error("Item não encontrado");
+
+  await assertOwnsPlaylist(supabase, user.id, item.playlist_id);
 
   const { error } = await supabase
     .from("playlist_items")
@@ -65,11 +112,13 @@ export async function updatePlaylistItem(
     throw new Error(error.message);
   }
 
-  revalidatePath(`/dashboard/playlists/${data.playlist_id}`);
+  revalidatePath(`/dashboard/playlists/${item.playlist_id}`);
 }
 
 export async function movePlaylistItemUp(playlistId: string, itemId: string) {
   const supabase = await createClient();
+  const user = await getAuthedUser(supabase);
+  await assertOwnsPlaylist(supabase, user.id, playlistId);
 
   const { error } = await supabase.rpc("move_playlist_item_up", {
     p_item_id: itemId,
@@ -82,6 +131,8 @@ export async function movePlaylistItemUp(playlistId: string, itemId: string) {
 
 export async function movePlaylistItemDown(playlistId: string, itemId: string) {
   const supabase = await createClient();
+  const user = await getAuthedUser(supabase);
+  await assertOwnsPlaylist(supabase, user.id, playlistId);
 
   const { error } = await supabase.rpc("move_playlist_item_down", {
     p_item_id: itemId,

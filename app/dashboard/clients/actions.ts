@@ -5,14 +5,27 @@ import { revalidatePath } from "next/cache";
 
 export async function deleteClientAction(id: string) {
   const supabase = await createClient();
-  await supabase.from("clients").delete().eq("id", id);
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) throw new Error("Usuário não autenticado");
+
+  await supabase.from("clients").delete().eq("id", id).eq("user_id", user.id);
   revalidatePath("/dashboard/clients");
 }
 
 export async function toggleClientAction(id: string, isActive: boolean) {
   const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) throw new Error("Usuário não autenticado");
 
-  await supabase.from("clients").update({ is_active: !isActive }).eq("id", id);
+  await supabase
+    .from("clients")
+    .update({ is_active: !isActive })
+    .eq("id", id)
+    .eq("user_id", user.id);
 
   revalidatePath("/dashboard/clients");
 }
@@ -44,7 +57,11 @@ export async function upsertClientAction(
   };
 
   const { error } = id
-    ? await supabase.from("clients").update(payload).eq("id", id)
+    ? await supabase
+        .from("clients")
+        .update(payload)
+        .eq("id", id)
+        .eq("user_id", user.id)
     : await supabase.from("clients").insert(payload);
 
   if (error) {
