@@ -4,6 +4,7 @@ import { uploadMediaAction } from "@/app/dashboard/medias/actions";
 import { LimitReachedModal } from "@/components/dashboard/LimitReachedModal";
 import { useCheckLimits } from "@/hooks/useCheckLimits";
 import { generateVideoThumbnail } from "@/utils/generateVideoThumbnail";
+import { generatePdfThumbnail } from "@/utils/pdf";
 import { AlertCircle, Upload } from "lucide-react";
 import { useRef, useState } from "react";
 
@@ -61,6 +62,13 @@ export default function UploadButton() {
         } catch (thumbErr) {
           console.error("⚠️ Não foi possível gerar a thumbnail:", thumbErr);
         }
+      } else if (file.type === "application/pdf") {
+        try {
+          const thumbBlob = await generatePdfThumbnail(file);
+          formData.append("thumbnail", thumbBlob, "thumbnail.jpg");
+        } catch (thumbErr) {
+          console.error("⚠️ Não foi possível gerar a thumbnail do PDF:", thumbErr);
+        }
       }
 
       await uploadMediaAction(formData);
@@ -91,7 +99,7 @@ export default function UploadButton() {
         disabled={uploading}
         className="hidden"
         id="file-upload"
-        accept="image/jpeg,image/png,image/webp,image/gif,video/mp4,video/webm,video/quicktime"
+        accept="image/jpeg,image/png,image/webp,image/gif,video/mp4,video/webm,video/quicktime,application/pdf"
       />
 
       <label

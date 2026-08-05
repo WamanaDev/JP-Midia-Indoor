@@ -18,6 +18,7 @@ import { NewsForm } from "./forms/FormNews";
 import { Media } from "@/interfaces/Medias";
 import { ImageForm } from "./forms/FormImage";
 import { VideoForm } from "./forms/FormVideo";
+import { FormDocument } from "./forms/FormDocument";
 import { PlaylistItemCard } from "./PlaylistItemCard";
 import { TimeForm } from "./forms/FormHours";
 
@@ -28,6 +29,7 @@ const FORM_REGISTRY = {
   news: NewsForm,
   image: ImageForm,
   video: VideoForm,
+  document: FormDocument,
   hours: TimeForm,
 };
 
@@ -35,11 +37,17 @@ interface Props {
   items: PlaylistItems[];
   images: Media[] | null;
   videos: Media[] | null;
+  documents: Media[] | null;
 }
 
 /* ============================================ */
 
-export default function TimelineTab({ items, images, videos }: Props) {
+export default function TimelineTab({
+  items,
+  images,
+  videos,
+  documents,
+}: Props) {
   const params = useParams();
   const playlistId = params.id as string;
 
@@ -285,6 +293,7 @@ export default function TimelineTab({ items, images, videos }: Props) {
                   <Form
                     images={images}
                     videos={videos}
+                    documents={documents}
                     value={formData}
                     onChange={(data) =>
                       setFormData((prev) =>

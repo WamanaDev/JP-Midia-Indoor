@@ -12,9 +12,15 @@ interface Props {
   playlist: Playlist;
   images: Media[] | null;
   videos: Media[] | null;
+  documents: Media[] | null;
 }
 
-export default function Editor({ playlist, images, videos }: Props) {
+export default function Editor({
+  playlist,
+  images,
+  videos,
+  documents,
+}: Props) {
   const [activeTab, setActiveTab] = useState<"info" | "timeline">("timeline");
   console.log(playlist);
   return (
@@ -29,6 +35,7 @@ export default function Editor({ playlist, images, videos }: Props) {
           items={playlist.playlist_items}
           images={images}
           videos={videos}
+          documents={documents}
         />
       )}
     </div>

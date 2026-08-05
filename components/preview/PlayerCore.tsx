@@ -1,6 +1,7 @@
 "use client";
 
 import { createClient } from "@/utils/supabase/client";
+import type { PDFDocumentProxy } from "pdfjs-dist";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { News } from "./news/news";
 import { TimeNotOverlay } from "./time/TimeNotOverlay";
@@ -8,11 +9,12 @@ import { TimeOverlay } from "./time/TimeOverlay";
 import { WeatherNotOverlay } from "./weather/WeatherNotOverlay";
 import { WeatherOverlay } from "./weather/WeatherOverlay";
 import { NewsOverlay } from "./news/NewsOverlay";
+import { loadPdf } from "@/utils/pdf";
 
 // tipos básicos (simplifiquei)
 type PlaylistItem = {
   id: string;
-  type: "image" | "video" | "news" | "temperature" | "hours";
+  type: "image" | "video" | "news" | "temperature" | "hours" | "document";
   order_index: number;
   duration_override?: number | null;
   config?: any;
@@ -39,6 +41,14 @@ export function PlayerCore({ playlistId }: PlayerCoreProps) {
   const [visible, setVisible] = useState(true);
 
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  /* =========================================================
+   * PDF pagination state (type "document")
+   * ========================================================= */
+  const pdfDocRef = useRef<PDFDocumentProxy | null>(null);
+  const pdfCanvasRef = useRef<HTMLCanvasElement | null>(null);
+  const [pdfPageIndex, setPdfPageIndex] = useState(0);
+  const [pdfPageCount, setPdfPageCount] = useState(0);
 
   /* =========================================================
    * 1. Load playlist
@@ -139,6 +149,75 @@ export function PlayerCore({ playlistId }: PlayerCoreProps) {
   };
 
   /* =========================================================
+   * 3b. PDF: carrega o documento quando o item atual é "document"
+   * ========================================================= */
+  useEffect(() => {
+    const current = rotatingItems[activeIndex];
+
+    setPdfPageIndex(0);
+    setPdfPageCount(0);
+    pdfDocRef.current?.loadingTask.destroy();
+    pdfDocRef.current = null;
+
+    if (current?.type !== "document" || !current.localUri) return;
+
+    let cancelled = false;
+
+    loadPdf(current.localUri)
+      .then((pdf) => {
+        if (cancelled) {
+          pdf.loadingTask.destroy();
+          return;
+        }
+        pdfDocRef.current = pdf;
+        setPdfPageCount(pdf.numPages);
+      })
+      .catch((err) => console.error("Erro ao carregar PDF:", err));
+
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [rotatingItems[activeIndex]?.id]);
+
+  /* =========================================================
+   * 3c. PDF: renderiza a página atual no canvas
+   * ========================================================= */
+  useEffect(() => {
+    const pdf = pdfDocRef.current;
+    const canvas = pdfCanvasRef.current;
+    if (!pdf || !canvas || pdfPageCount === 0) return;
+
+    let cancelled = false;
+
+    (async () => {
+      const page = await pdf.getPage(pdfPageIndex + 1);
+      if (cancelled) return;
+
+      const container = canvas.parentElement;
+      const baseViewport = page.getViewport({ scale: 1 });
+      const scale = container
+        ? Math.min(
+            container.clientWidth / baseViewport.width,
+            container.clientHeight / baseViewport.height
+          )
+        : 1;
+      const viewport = page.getViewport({ scale: scale || 1 });
+
+      canvas.width = viewport.width;
+      canvas.height = viewport.height;
+      const ctx = canvas.getContext("2d");
+      if (!ctx || cancelled) return;
+
+      await page.render({ canvas, canvasContext: ctx, viewport }).promise;
+    })().catch((err) => console.error("Erro ao renderizar página do PDF:", err));
+
+    return () => {
+      cancelled = true;
+    };
+  }, [pdfPageIndex, pdfPageCount]);
+
+  /* =========================================================
    * 4. Rotation system
    * ========================================================= */
   useEffect(() => {
@@ -152,21 +231,48 @@ export function PlayerCore({ playlistId }: PlayerCoreProps) {
       timeoutRef.current = null;
     }
 
-    if (current.type !== "video") {
-      const ms = (current.duration_override ?? 8) * 1000;
-      const fadeDuration = 400; // ms
+    if (current.type === "video") {
+      return; // avança via onEnded
+    }
 
-      timeoutRef.current = setTimeout(() => {
+    // Documento ainda carregando (pdfPageCount === 0): espera a página
+    // atual ficar pronta antes de armar o próximo passo — evita
+    // "consumir" a primeira página instantaneamente.
+    if (current.type === "document" && pdfPageCount === 0) {
+      return;
+    }
+
+    const hasMorePdfPages =
+      current.type === "document" && pdfPageIndex < pdfPageCount - 1;
+
+    const ms = (current.duration_override ?? 8) * 1000;
+    const fadeDuration = 400; // ms
+
+    timeoutRef.current = setTimeout(
+      () => {
+        if (hasMorePdfPages) {
+          // Próxima página do mesmo documento, sem fade nem trocar de item
+          setPdfPageIndex((i) => i + 1);
+          return;
+        }
+
         // começa fade-out
         setVisible(false);
 
         setTimeout(() => {
           setTick((t) => t + 1);
+          // Reseta a página aqui (não só no efeito de carregamento):
+          // se este for o único item rotativo, advance() não muda de
+          // item (mesmo id), então o efeito de carregamento — que só
+          // roda quando o id muda — nunca dispararia de novo, e o PDF
+          // ficaria travado na última página.
+          setPdfPageIndex(0);
           advance();
           setVisible(true); // fade-in
         }, fadeDuration);
-      }, ms - fadeDuration);
-    }
+      },
+      hasMorePdfPages ? ms : ms - fadeDuration
+    );
 
     return () => {
       if (timeoutRef.current) {
@@ -174,13 +280,20 @@ export function PlayerCore({ playlistId }: PlayerCoreProps) {
         timeoutRef.current = null;
       }
     };
-  }, [activeIndex, rotatingItems]);
+  }, [activeIndex, rotatingItems, pdfPageIndex, pdfPageCount]);
 
   /* =========================================================
    * Render helpers
    * ========================================================= */
   const currentItem =
     rotatingItems.length > 0 ? rotatingItems[activeIndex] : null;
+
+  useEffect(() => {
+    return () => {
+      pdfDocRef.current?.loadingTask.destroy();
+      pdfDocRef.current = null;
+    };
+  }, []);
 
   /* =========================================================
    * Render
@@ -227,6 +340,13 @@ export function PlayerCore({ playlistId }: PlayerCoreProps) {
                 }
               }}
             />
+          )}
+
+          {/* DOCUMENT (PDF) */}
+          {currentItem.type === "document" && (
+            <div className="w-full h-full flex items-center justify-center bg-white">
+              <canvas ref={pdfCanvasRef} className="max-w-full max-h-full" />
+            </div>
           )}
 
           {/* NEWS fullscreen */}

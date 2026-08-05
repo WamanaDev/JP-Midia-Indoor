@@ -8,6 +8,7 @@ import {
   ArrowUp,
   ArrowDown,
   Video as VideoIcon,
+  FileText,
 } from "lucide-react";
 import Image from "next/image";
 import { getMediaCategoryByType } from "./media.config";
@@ -33,6 +34,7 @@ export function PlaylistItemCard({
   let preview;
   if (playlistItem.media_file_id && playlistItem.media_files) {
     const isVideo = playlistItem.media_files.mime_type?.startsWith("video");
+    const isPdf = playlistItem.media_files.mime_type === "application/pdf";
 
     if (playlistItem.media_files.thumbnail_path) {
       preview = (
@@ -43,12 +45,16 @@ export function PlaylistItemCard({
           alt={playlistItem.media_files.original_name}
         />
       );
-    } else if (isVideo) {
-      // Vídeo sem thumbnail gerada (upload antigo, ou a geração falhou) —
-      // não dá pra renderizar o arquivo de vídeo como <Image>.
+    } else if (isVideo || isPdf) {
+      // Vídeo/PDF sem thumbnail gerada (upload antigo, ou a geração
+      // falhou) — não dá pra renderizar o arquivo original como <Image>.
       preview = (
         <div className="w-full h-full flex items-center justify-center bg-gray-100 dark:bg-gray-900 rounded border">
-          <VideoIcon className="w-10 h-10 text-gray-400" />
+          {isPdf ? (
+            <FileText className="w-10 h-10 text-gray-400" />
+          ) : (
+            <VideoIcon className="w-10 h-10 text-gray-400" />
+          )}
         </div>
       );
     } else {

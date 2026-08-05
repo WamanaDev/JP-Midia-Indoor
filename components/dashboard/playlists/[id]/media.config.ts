@@ -5,6 +5,7 @@ import {
   Newspaper,
   CloudSun,
   FileSpreadsheet,
+  FileText,
   LucideIcon,
   Clock,
 } from "lucide-react";
@@ -15,6 +16,7 @@ export type MediaType =
   | "news"
   | "temperature"
   | "google-sheets"
+  | "document"
   | "hours";
 
 export type MediaCategory = {
@@ -46,6 +48,12 @@ export const MEDIA_CATEGORIES: MediaCategory[] = [
         label: "Vídeo",
         icon: Video,
         color: "text-purple-600",
+      },
+      {
+        type: "document",
+        label: "Documento (PDF)",
+        icon: FileText,
+        color: "text-red-600",
       },
     ],
   },

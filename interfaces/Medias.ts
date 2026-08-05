@@ -25,10 +25,15 @@ export interface VideoFormProps extends MediaFormProps {
   videos: Media[] | null;
 }
 
+export interface DocumentFormProps extends MediaFormProps {
+  documents: Media[] | null;
+}
+
 export type MediaType =
   | "image"
   | "video"
   | "weather"
   | "news"
   | "stock"
-  | "google-sheets";
+  | "google-sheets"
+  | "document";

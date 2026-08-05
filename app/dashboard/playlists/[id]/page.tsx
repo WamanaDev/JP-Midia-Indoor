@@ -67,5 +67,19 @@ export default async function PlaylistEditorPage({
     .ilike("mime_type", "video/%")
     .order("created_at", { ascending: false });
 
-  return <Editor playlist={playlist} images={images} videos={videos} />;
+  const { data: documents } = await supabase
+    .from("media_files")
+    .select("*")
+    .eq("user_id", user.id)
+    .eq("mime_type", "application/pdf")
+    .order("created_at", { ascending: false });
+
+  return (
+    <Editor
+      playlist={playlist}
+      images={images}
+      videos={videos}
+      documents={documents}
+    />
+  );
 }

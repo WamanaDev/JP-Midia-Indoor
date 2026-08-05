@@ -17,6 +17,7 @@ const ALLOWED_MIME_TYPES = new Set([
   "video/mp4",
   "video/webm",
   "video/quicktime",
+  "application/pdf",
 ]);
 
 export async function uploadMediaAction(formData: FormData) {
