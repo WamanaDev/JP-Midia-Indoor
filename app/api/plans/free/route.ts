@@ -5,12 +5,12 @@ export async function GET() {
   try {
     const supabase = await createClient();
 
-    // Buscar plano gratuito pelo nome "Free" E price null
+    // Buscar plano gratuito (price = 0) — o plano padrão atribuído a
+    // novos cadastros via DEFAULT em profiles.plan_id
     const { data: plan, error } = await supabase
       .from("plans")
       .select("*")
-      .eq("name", "Free")
-      .is("price", null)
+      .eq("price", 0)
       .single();
 
     if (error || !plan) {

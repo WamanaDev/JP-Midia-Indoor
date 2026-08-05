@@ -34,8 +34,16 @@ export function PricingClient({
       return;
     }
 
-    // Se o plano selecionado é Free, não precisa de checkout
-    if (plan.price === null || plan.price === 0) {
+    // Plano sob consulta (price null, ex. Enterprise) não é "grátis" —
+    // não passa por checkout nem pelo fluxo de downgrade, só direciona
+    // para contato comercial.
+    if (plan.price === null) {
+      window.location.href = "mailto:contato@jpmidia.com";
+      return;
+    }
+
+    // Plano gratuito de verdade (price === 0), não precisa de checkout
+    if (plan.price === 0) {
       console.log("⚠️ Plano gratuito selecionado");
       // Se tem plano atual pago, mostrar modal de confirmação de downgrade
       if (currentPlanId) {
@@ -131,9 +139,14 @@ export function PricingClient({
       return "Plano Atual";
     }
 
+    // Plano sob consulta (price null) — nunca é tratado como "grátis"
+    if (plan.price === null) {
+      return "Falar com Vendas";
+    }
+
     // Se não tem plano atual
     if (!currentPlanId) {
-      if (plan.price === null || plan.price === 0) return "Começar Grátis";
+      if (plan.price === 0) return "Começar Grátis";
       return "Assinar Agora";
     }
 
@@ -141,12 +154,12 @@ export function PricingClient({
     const currentPlan = plans.find((p) => p.id === currentPlanId);
 
     if (!currentPlan) {
-      if (plan.price === null || plan.price === 0) return "Começar Grátis";
+      if (plan.price === 0) return "Começar Grátis";
       return "Assinar Agora";
     }
 
     // Plano Free selecionado
-    if (plan.price === null || plan.price === 0) {
+    if (plan.price === 0) {
       // Se o plano atual é pago, é downgrade para Free
       if (currentPlan.price !== null && currentPlan.price > 0) {
         return "Voltar ao Gratuito";

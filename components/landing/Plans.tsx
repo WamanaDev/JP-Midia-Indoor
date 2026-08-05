@@ -124,14 +124,24 @@ export function Plans({ profile, plans, user }: PricingProps) {
                   {/* BOTÃO */}
                   {!isCurrent && (
                     <Link
-                      href={user ? `/checkout/${plan.id}` : "/auth/signin"}
-                      className={`w-full p-4 rounded-lg font-semibold transition-all ${
+                      href={
+                        plan.price === null
+                          ? "mailto:contato@jpmidia.com"
+                          : user
+                          ? `/checkout/${plan.id}`
+                          : "/auth/signin"
+                      }
+                      className={`w-full p-4 rounded-lg font-semibold transition-all inline-block text-center ${
                         isHighlighted
                           ? "bg-white text-[#1E3A8A] hover:bg-gray-100"
                           : "bg-[#3B82F6] text-white hover:bg-[#1E3A8A]"
                       }`}
                     >
-                      {user ? "Assinar agora" : "Começar agora"}
+                      {plan.price === null
+                        ? "Falar com Vendas"
+                        : user
+                        ? "Assinar agora"
+                        : "Começar agora"}
                     </Link>
                   )}
 
