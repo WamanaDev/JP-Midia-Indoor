@@ -47,6 +47,10 @@ export default function TimelineTab({ items, images, videos }: Props) {
   const [selectedMedia, setSelectedMedia] = useState<MediaItem | null>(null);
 
   const [formData, setFormData] = useState<PlaylistItemForm | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  const errorMessage = (err: unknown) =>
+    err instanceof Error ? err.message : "Ocorreu um erro inesperado";
 
   /* ============== SUBMIT ================= */
 
@@ -54,26 +58,46 @@ export default function TimelineTab({ items, images, videos }: Props) {
     e.preventDefault();
 
     if (!formData) return;
-    if (formData.id) {
-      await updatePlaylistItem(formData.id, formData);
-    } else {
-      await createPlaylistItem(playlistId, formData);
+    setError(null);
+    try {
+      if (formData.id) {
+        await updatePlaylistItem(formData.id, formData);
+      } else {
+        await createPlaylistItem(playlistId, formData);
+      }
+      setModalOpen(false);
+      setSelectedMedia(null);
+      setFormData(null);
+    } catch (err) {
+      setError(errorMessage(err));
     }
-    setModalOpen(false);
-    setSelectedMedia(null);
-    setFormData(null);
   };
 
   const handleMoveUp = async (item: PlaylistItems) => {
-    await movePlaylistItemUp(playlistId, item.id);
+    setError(null);
+    try {
+      await movePlaylistItemUp(playlistId, item.id);
+    } catch (err) {
+      setError(errorMessage(err));
+    }
   };
 
   const handleMoveDown = async (item: PlaylistItems) => {
-    await movePlaylistItemDown(playlistId, item.id);
+    setError(null);
+    try {
+      await movePlaylistItemDown(playlistId, item.id);
+    } catch (err) {
+      setError(errorMessage(err));
+    }
   };
 
   const handleDelete = async (item: PlaylistItems) => {
-    await deletePlaylistItem(item);
+    setError(null);
+    try {
+      await deletePlaylistItem(item);
+    } catch (err) {
+      setError(errorMessage(err));
+    }
   };
 
   /* ============== SELECT MEDIA ================= */
@@ -116,6 +140,19 @@ export default function TimelineTab({ items, images, videos }: Props) {
           + Adicionar mídia
         </button>
       </div>
+
+      {/* Erro */}
+      {error && (
+        <div className="p-4 bg-red-50 border border-red-200 rounded-lg flex items-start justify-between gap-3">
+          <p className="text-sm text-red-800">{error}</p>
+          <button
+            onClick={() => setError(null)}
+            className="text-red-600 hover:text-red-800 text-sm font-medium shrink-0"
+          >
+            Fechar
+          </button>
+        </div>
+      )}
 
       {/* Empty */}
       {items.length === 0 && (
