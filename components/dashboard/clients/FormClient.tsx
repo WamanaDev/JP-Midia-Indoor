@@ -1,8 +1,9 @@
 "use client";
 
 import { upsertClientAction } from "@/app/dashboard/clients/actions";
+import { formatCnpj } from "@/lib/format/cnpj";
 import { AlertCircle } from "lucide-react";
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 
 interface Client {
   id?: string;
@@ -22,6 +23,7 @@ export function FormClient({ client, onCancel }: FormClientProps) {
   const [state, formAction, isPending] = useActionState(upsertClientAction, {
     error: null,
   });
+  const [cnpj, setCnpj] = useState(() => formatCnpj(client?.cnpj ?? ""));
 
   return (
     <div className="bg-white dark:bg-[#1F2937] rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
@@ -66,7 +68,10 @@ export function FormClient({ client, onCancel }: FormClientProps) {
           <label className="block text-sm font-medium mb-2">CNPJ</label>
           <input
             name="cnpj"
-            defaultValue={client?.cnpj ?? ""}
+            value={cnpj}
+            onChange={(e) => setCnpj(formatCnpj(e.target.value))}
+            placeholder="00.000.000/0000-00"
+            inputMode="numeric"
             required
             className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[#3B82F6] focus:border-transparent outline-none bg-white dark:bg-gray-800 text-[#111827] dark:text-white"
           />

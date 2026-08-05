@@ -1,5 +1,6 @@
 "use server";
 
+import { isValidCnpj } from "@/lib/format/cnpj";
 import { createClient } from "@/utils/supabase/server";
 import { revalidatePath } from "next/cache";
 
@@ -47,11 +48,16 @@ export async function upsertClientAction(
   }
 
   const id = formData.get("id") as string | null;
+  const cnpj = formData.get("cnpj") as string;
+
+  if (!isValidCnpj(cnpj)) {
+    return { error: "CNPJ inválido. Confira os dígitos e tente novamente." };
+  }
 
   const payload = {
     name: formData.get("name"),
     company_name: formData.get("company_name"),
-    cnpj: formData.get("cnpj"),
+    cnpj,
     is_active: formData.get("is_active") === "on",
     user_id: user.id,
   };
