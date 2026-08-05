@@ -78,7 +78,7 @@ export default function UploadButton() {
         disabled={uploading}
         className="hidden"
         id="file-upload"
-        accept="image/*,video/*"
+        accept="image/jpeg,image/png,image/webp,image/gif,video/mp4,video/webm,video/quicktime"
       />
 
       <label

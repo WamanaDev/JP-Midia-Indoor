@@ -9,6 +9,16 @@ import crypto from "crypto";
 
 import { uploadFileToR2, deleteFileFromR2 } from "@/lib/media/server";
 
+const ALLOWED_MIME_TYPES = new Set([
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+  "image/gif",
+  "video/mp4",
+  "video/webm",
+  "video/quicktime",
+]);
+
 export async function uploadMediaAction(formData: FormData) {
   const supabase = await createClient();
 
@@ -29,6 +39,12 @@ export async function uploadMediaAction(formData: FormData) {
   const MAX_SIZE_BYTES = 50 * 1024 * 1024;
   if (file.size > MAX_SIZE_BYTES) {
     throw new Error("Arquivo muito grande (máx. 50MB)");
+  }
+
+  if (!ALLOWED_MIME_TYPES.has(file.type)) {
+    throw new Error(
+      "Tipo de arquivo não suportado. Envie uma imagem (JPEG, PNG, WEBP, GIF) ou vídeo (MP4, WEBM, MOV)."
+    );
   }
 
   // 🗂️ Key única no R2
