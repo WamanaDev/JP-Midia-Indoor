@@ -71,7 +71,7 @@ export function FormClient({ client, onCancel }: FormClientProps) {
             value={cnpj}
             onChange={(e) => setCnpj(formatCnpj(e.target.value))}
             placeholder="00.000.000/0000-00"
-            inputMode="numeric"
+            autoCapitalize="characters"
             required
             className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-[#3B82F6] focus:border-transparent outline-none bg-white dark:bg-gray-800 text-[#111827] dark:text-white"
           />
