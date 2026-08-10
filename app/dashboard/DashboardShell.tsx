@@ -1,5 +1,6 @@
 "use client";
 
+import { AndroidBetaModal } from "@/components/dashboard/AndroidBetaModal";
 import { MobileHeader } from "@/components/dashboard/MobileHeader";
 import { Sidebar } from "@/components/dashboard/SideBar";
 import { useState } from "react";
@@ -10,6 +11,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="flex h-full min-h-screen bg-gray-200 dark:bg-gray-900">
+      <AndroidBetaModal />
       <Sidebar
         open={sidebarOpen}
         collapsed={sidebarCollapsed}

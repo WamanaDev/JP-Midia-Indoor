@@ -1,6 +1,7 @@
 "use client";
 
 import { createClient } from "@/utils/supabase/client"; // <-- aponta para client.ts
+import { ANDROID_BETA_MODAL_SHOWN_KEY } from "@/components/dashboard/AndroidBetaModal";
 import {
   useState,
   useEffect,
@@ -75,6 +76,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signOut = async () => {
     await supabase.auth.signOut();
     setUser(null);
+    sessionStorage.removeItem(ANDROID_BETA_MODAL_SHOWN_KEY);
   };
 
   async function resetPassword(email: string): Promise<AuthError | null> {
