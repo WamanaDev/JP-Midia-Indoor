@@ -9,8 +9,8 @@ export default function SocialAuth() {
   const signIn = async (provider: "google" | "discord") => {
     const redirectTo =
       typeof window !== "undefined"
-        ? `${window.location.origin}/auth/callback`
-        : `${process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000"}/auth/callback`;
+        ? `${window.location.origin}/oauth/callback`
+        : `${process.env.NEXT_PUBLIC_SITE_URL || "http://jpmidia.wamanadev.com.br"}/oauth/callback`;
 
     try {
       await supabase.auth.signInWithOAuth({
