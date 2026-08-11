@@ -34,7 +34,7 @@ export default function PoliticaDeCookiesPage() {
           Política de Cookies
         </h1>
         <p className="text-center text-gray-500 mb-12">
-          Última atualização: 29 de dezembro de 2025
+          Última atualização: 10 de agosto de 2026
         </p>
 
         {/* Conteúdo */}
@@ -43,7 +43,9 @@ export default function PoliticaDeCookiesPage() {
             <p>
               Esta Política de Cookies explica como a{" "}
               <strong>JP Mídia Indoor</strong> utiliza cookies e tecnologias
-              semelhantes quando você acessa nossa plataforma.
+              semelhantes quando você acessa nossa plataforma, em
+              conformidade com a LGPD (Lei nº 13.709/2018) e o Marco Civil da
+              Internet (Lei nº 12.965/2014).
             </p>
           </section>
 
@@ -98,7 +100,11 @@ export default function PoliticaDeCookiesPage() {
             <p className="mt-2">
               A autenticação é realizada por meio do <strong>Supabase</strong>,
               que utiliza cookies estritamente necessários para gerenciamento
-              seguro de sessões.
+              seguro de sessões. Durante o checkout de assinaturas, a página
+              de pagamento hospedada pelo <strong>Stripe</strong> também pode
+              definir cookies próprios, necessários para processar o
+              pagamento com segurança. Não utilizamos cookies de publicidade
+              ou de análise de terceiros.
             </p>
           </section>
 
@@ -143,7 +149,7 @@ export default function PoliticaDeCookiesPage() {
               Em caso de dúvidas sobre esta Política de Cookies, entre em
               contato:
               <br />
-              <strong>E-mail:</strong> contato@jpmidia.com
+              <strong>E-mail:</strong> contato@wamanadev.com.br
             </p>
           </section>
         </div>

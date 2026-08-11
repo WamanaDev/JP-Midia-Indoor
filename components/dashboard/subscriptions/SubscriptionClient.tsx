@@ -69,6 +69,7 @@ export function SubscriptionClient({
 }: SubscriptionClientProps) {
   const [loading, setLoading] = useState(false);
   const [cancelLoading, setCancelLoading] = useState(false);
+  const [refundLoading, setRefundLoading] = useState(false);
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
   const [loadingData, setLoadingData] = useState(true);
@@ -220,6 +221,45 @@ export function SubscriptionClient({
       alert(error.message);
     } finally {
       setCancelLoading(false);
+    }
+  };
+
+  // Direito de arrependimento (art. 49 do CDC): 7 dias corridos a contar da cobrança.
+  const latestPaidInvoice = invoices.find((invoice) => invoice.status === "paid");
+  const withinWithdrawalWindow =
+    !!latestPaidInvoice &&
+    Date.now() - latestPaidInvoice.created * 1000 <= 7 * 24 * 60 * 60 * 1000;
+
+  const handleRequestRefund = async () => {
+    if (
+      !confirm(
+        "Isso cancela sua assinatura imediatamente e devolve o valor da última cobrança. Deseja continuar?"
+      )
+    ) {
+      return;
+    }
+
+    setRefundLoading(true);
+
+    try {
+      const response = await fetch("/api/stripe/request-refund", {
+        method: "POST",
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Erro ao solicitar reembolso");
+      }
+
+      alert(
+        "Reembolso solicitado! O valor deve aparecer na sua fatura em alguns dias úteis."
+      );
+      router.refresh();
+    } catch (error: any) {
+      alert(error.message);
+    } finally {
+      setRefundLoading(false);
     }
   };
 
@@ -657,6 +697,32 @@ export function SubscriptionClient({
           <TrendingUp className="w-5 h-5" />
         </Link>
       </div>
+
+      {/* Direito de arrependimento (art. 49 CDC) */}
+      {subscription &&
+        !subscription.cancel_at_period_end &&
+        withinWithdrawalWindow && (
+          <div className="bg-orange-50 dark:bg-orange-900/20 rounded-xl p-6 border-2 border-orange-200 dark:border-orange-800">
+            <h3 className="text-lg font-bold text-orange-900 dark:text-orange-300 mb-2">
+              Se arrependeu da assinatura?
+            </h3>
+            <p className="text-sm text-orange-800 dark:text-orange-400 mb-4">
+              Você tem até 7 dias corridos após a cobrança para desistir e
+              receber o valor de volta integralmente, conforme o art. 49 do
+              Código de Defesa do Consumidor. Isso cancela sua assinatura
+              imediatamente.
+            </p>
+            <button
+              onClick={handleRequestRefund}
+              disabled={refundLoading}
+              className="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors disabled:opacity-50 font-semibold"
+            >
+              {refundLoading
+                ? "Processando..."
+                : "Cancelar e solicitar reembolso"}
+            </button>
+          </div>
+        )}
 
       {/* Cancelar Assinatura */}
       {subscription &&
