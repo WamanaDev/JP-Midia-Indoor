@@ -700,6 +700,7 @@ export function SubscriptionClient({
 
       {/* Direito de arrependimento (art. 49 CDC) */}
       {subscription &&
+        subscription.status !== "canceled" &&
         !subscription.cancel_at_period_end &&
         withinWithdrawalWindow && (
           <div className="bg-orange-50 dark:bg-orange-900/20 rounded-xl p-6 border-2 border-orange-200 dark:border-orange-800">
@@ -726,6 +727,7 @@ export function SubscriptionClient({
 
       {/* Cancelar Assinatura */}
       {subscription &&
+        subscription.status !== "canceled" &&
         !subscription.cancel_at_period_end &&
         currentPlan?.price != null && (
           <div className="bg-red-50 dark:bg-red-900/20 rounded-xl p-6 border-2 border-red-200 dark:border-red-800">

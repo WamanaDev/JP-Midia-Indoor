@@ -89,7 +89,13 @@ export async function uploadMediaAction(formData: FormData) {
       thumbnail_path: thumbnailUrl,
     });
 
-    if (error) throw error;
+    if (error) {
+      // O insert pode ser rejeitado (ex: limite de armazenamento do plano
+      // excedido, via RLS). Sem isso, o arquivo já enviado ao R2 fica órfão.
+      await deleteFileFromR2(key).catch(() => {});
+      if (thumbKey) await deleteFileFromR2(thumbKey).catch(() => {});
+      throw error;
+    }
 
     // 🔄 Revalidar rota
     revalidatePath("/dashboard/medias");

@@ -38,15 +38,20 @@ export async function POST() {
     );
     const stripeSubscription = stripeSubscriptionResponse as any;
 
+    // current_period_end vive no item da subscription, não na subscription
+    // em si, nesta versão da API do Stripe.
+    const itemPeriodEnd =
+      stripeSubscription.items?.data?.[0]?.current_period_end;
+
     console.log("📊 Subscription no Stripe:", {
       id: stripeSubscription.id,
       status: stripeSubscription.status,
-      current_period_end: stripeSubscription.current_period_end,
+      current_period_end: itemPeriodEnd,
     });
 
     // Atualizar banco com dados do Stripe
-    const currentPeriodEnd = stripeSubscription.current_period_end
-      ? new Date(stripeSubscription.current_period_end * 1000).toISOString()
+    const currentPeriodEnd = itemPeriodEnd
+      ? new Date(itemPeriodEnd * 1000).toISOString()
       : null;
 
     const { error: updateError } = await supabase

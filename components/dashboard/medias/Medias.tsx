@@ -6,13 +6,22 @@ import { useState } from "react";
 import { MediaCard } from "./MediaCard";
 import Image from "next/image";
 import UploadButton from "./UploadButton";
+import { UsageBadge } from "@/components/dashboard/UsageBadge";
 
 interface Props {
   medias: Media[] | null;
+  currentStorageGb: number;
+  maxStorageGb: number | null;
 }
 
-export function Medias({ medias }: Props) {
+export function Medias({ medias, currentStorageGb, maxStorageGb }: Props) {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  // Abaixo de 1 GB, duas casas decimais em GB arredondam pra "0.00" e o uso
+  // real fica invisível — mostra em MB nesse caso.
+  const formattedCurrent =
+    currentStorageGb < 1
+      ? `${(currentStorageGb * 1024).toFixed(1)} MB`
+      : undefined;
   return (
     <div className="space-y-8">
       <header className="flex justify-between items-center">
@@ -22,6 +31,15 @@ export function Medias({ medias }: Props) {
         </div>
         <UploadButton />
       </header>
+
+      <UsageBadge
+        label="Armazenamento"
+        current={currentStorageGb}
+        formattedCurrent={formattedCurrent}
+        max={maxStorageGb}
+        unit="GB"
+        decimals={2}
+      />
 
       {!medias || medias.length === 0 ? (
         <div className="text-center p-12 border rounded-xl">

@@ -5,6 +5,7 @@ import { ClientCard } from "./ClientCard";
 import { Plus, Users } from "lucide-react";
 import { FormClient } from "./FormClient";
 import { Client } from "@/interfaces/Clients";
+import { UsageBadge } from "@/components/dashboard/UsageBadge";
 
 interface Props {
   clients: Client[] | null;
@@ -13,6 +14,7 @@ interface Props {
 export function Clients({ clients }: Props) {
   const [editingClient, setEditingClient] = useState<Client | null>(null);
   const [showForm, setShowForm] = useState(false);
+  const clientsCount = clients?.length ?? 0;
 
   return (
     <div className="space-y-8">
@@ -33,6 +35,8 @@ export function Clients({ clients }: Props) {
           Novo Cliente
         </button>
       </header>
+
+      <UsageBadge label="Clientes" current={clientsCount} />
 
       {showForm && (
         <FormClient

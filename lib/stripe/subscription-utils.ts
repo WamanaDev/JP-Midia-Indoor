@@ -8,6 +8,8 @@ export async function getUserSubscriptionStatus(userId: string) {
     .from("subscriptions")
     .select("*")
     .eq("user_id", userId)
+    .order("created_at", { ascending: false })
+    .limit(1)
     .single();
 
   // Buscar plano
@@ -21,7 +23,10 @@ export async function getUserSubscriptionStatus(userId: string) {
   const isActive =
     !subscription || // Sem subscription = plano gratuito (Freemium)
     subscription.status === "active" ||
-    subscription.status === "trialing";
+    subscription.status === "trialing" ||
+    // Cancelada = o usuário já caiu pro Freemium (profiles.plan_id foi
+    // revertido pelo webhook); não é um estado bloqueado, é o esperado.
+    subscription.status === "canceled";
 
   // Verificar se está com pagamento pendente
   const isPastDue = subscription?.status === "past_due";

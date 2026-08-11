@@ -22,13 +22,17 @@ export default async function SubscriptionsPage() {
     .single();
 
   // Buscar subscription
-  const { data: subscription } = await supabase
+  const { data: subscription, error: subscriptionError } = await supabase
     .from("subscriptions")
     .select("*")
     .eq("user_id", user.id)
     .order("created_at", { ascending: false })
     .limit(1)
     .single();
+
+  if (subscriptionError) {
+    console.error("❌ Erro ao buscar subscription:", subscriptionError);
+  }
 
   // ✅ Sincronizar automaticamente com o Stripe
   if (subscription?.stripe_subscription_id) {
@@ -45,8 +49,12 @@ export default async function SubscriptionsPage() {
         console.log("- Status no Stripe:", stripeSubscription.status);
 
         // Atualizar banco com dados do Stripe
-        const currentPeriodEnd = stripeSubscription.current_period_end
-          ? new Date(stripeSubscription.current_period_end * 1000).toISOString()
+        // current_period_end vive no item da subscription, não na subscription
+        // em si, nesta versão da API do Stripe.
+        const itemPeriodEnd =
+          stripeSubscription.items?.data?.[0]?.current_period_end;
+        const currentPeriodEnd = itemPeriodEnd
+          ? new Date(itemPeriodEnd * 1000).toISOString()
           : null;
 
         await supabase

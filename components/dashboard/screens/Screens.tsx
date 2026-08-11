@@ -1,6 +1,7 @@
 "use client";
 
 import { LimitReachedModal } from "@/components/dashboard/LimitReachedModal";
+import { UsageBadge } from "@/components/dashboard/UsageBadge";
 import { useCheckLimits } from "@/hooks/useCheckLimits";
 import { Client } from "@/interfaces/Clients";
 import { Playlist } from "@/interfaces/Playlists";
@@ -14,9 +15,17 @@ interface Props {
   screens: ScreenProps[] | null;
   clients: Client[] | null;
   playlists: Playlist[] | null;
+  currentScreens: number;
+  maxScreens: number | null;
 }
 
-export function Screens({ screens, clients, playlists }: Props) {
+export function Screens({
+  screens,
+  clients,
+  playlists,
+  currentScreens,
+  maxScreens,
+}: Props) {
   const [editingScreen, setEditingScreen] = useState<ScreenProps | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [showLimitModal, setShowLimitModal] = useState(false);
@@ -67,6 +76,8 @@ export function Screens({ screens, clients, playlists }: Props) {
           )}
         </button>
       </header>
+
+      <UsageBadge label="Telas" current={currentScreens} max={maxScreens} />
 
       {/* Modal de Limite Atingido */}
       {usageData && (

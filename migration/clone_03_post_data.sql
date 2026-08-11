@@ -590,6 +590,26 @@ CREATE POLICY "update own playlists" ON public.playlists FOR UPDATE TO authentic
 
 
 --
+-- Name: subscriptions; Type: ROW SECURITY; Schema: public; Owner: -
+--
+
+ALTER TABLE public.subscriptions ENABLE ROW LEVEL SECURITY;
+
+--
+-- Name: subscriptions Users can view own subscription; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY "Users can view own subscription" ON public.subscriptions FOR SELECT USING ((user_id = auth.uid()));
+
+
+--
+-- Name: subscriptions Users can update own subscription; Type: POLICY; Schema: public; Owner: -
+--
+
+CREATE POLICY "Users can update own subscription" ON public.subscriptions FOR UPDATE USING ((user_id = auth.uid()));
+
+
+--
 -- Name: supabase_realtime media_files; Type: PUBLICATION TABLE; Schema: public; Owner: -
 --
 

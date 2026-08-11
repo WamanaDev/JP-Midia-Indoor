@@ -1,4 +1,5 @@
 import { AccessBlocked } from "@/components/dashboard/AccessBlocked";
+import { OverLimitBanner } from "@/components/dashboard/OverLimitBanner";
 import { Screens } from "@/components/dashboard/screens/Screens";
 import { checkSubscriptionAccess } from "@/lib/stripe/subscription-guard";
 import { createClient } from "@/utils/supabase/server";
@@ -17,24 +18,11 @@ export default async function ScreensPage() {
   // ✅ Verificar acesso
   const access = await checkSubscriptionAccess(session.user.id);
 
-  // ✅ Bloquear se não tiver acesso
-  if (!access.canAccess) {
-    const reason = access.isPastDue
-      ? "past_due"
-      : access.exceededScreens
-      ? "exceeded_screens"
-      : "exceeded_storage";
-
-    return (
-      <AccessBlocked
-        reason={reason}
-        message={access.message!}
-        currentScreens={access.currentScreens}
-        maxScreens={access.maxScreens}
-        currentStorageGb={access.currentStorageGb}
-        maxStorageGb={access.maxStorageGb}
-      />
-    );
+  // ✅ Pagamento pendente continua bloqueando por completo — isso não se
+  // resolve apagando recursos. Limite excedido só mostra um aviso, pois o
+  // usuário precisa entrar aqui para apagar telas e voltar dentro do limite.
+  if (access.isPastDue) {
+    return <AccessBlocked reason="past_due" message={access.message!} />;
   }
 
   const [screens, clients, playlists] = await Promise.all([
@@ -47,10 +35,15 @@ export default async function ScreensPage() {
   ]);
 
   return (
-    <Screens
-      screens={screens.data}
-      clients={clients.data}
-      playlists={playlists.data}
-    />
+    <>
+      {!access.canAccess && <OverLimitBanner message={access.message!} />}
+      <Screens
+        screens={screens.data}
+        clients={clients.data}
+        playlists={playlists.data}
+        currentScreens={access.currentScreens}
+        maxScreens={access.maxScreens}
+      />
+    </>
   );
 }

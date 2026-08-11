@@ -47,7 +47,9 @@ export async function checkSubscriptionAccess(userId: string) {
     canAccess: !isPastDue && !exceededScreens && !exceededStorage,
     currentScreens: screensCount || 0,
     maxScreens,
-    currentStorageGb: parseFloat(storageUsedGb.toFixed(2)),
+    // Sem arredondar aqui: quem exibe decide a precisão (ex: MB para uso
+    // pequeno). Arredondar pra 2 casas antes de devolver zerava usos < 10MB.
+    currentStorageGb: storageUsedGb,
     maxStorageGb,
     message: isPastDue
       ? "Pagamento pendente. Por favor, regularize sua assinatura para continuar acessando este recurso."

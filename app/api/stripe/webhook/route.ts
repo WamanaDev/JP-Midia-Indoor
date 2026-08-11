@@ -85,8 +85,11 @@ export async function POST(request: NextRequest) {
             );
             const subData = subscriptionResponse as any;
 
-            const currentPeriodEnd = subData.current_period_end
-              ? new Date(subData.current_period_end * 1000).toISOString()
+            // current_period_end lives on the subscription item, not the
+            // subscription itself, in this Stripe API version.
+            const itemPeriodEnd = subData.items?.data?.[0]?.current_period_end;
+            const currentPeriodEnd = itemPeriodEnd
+              ? new Date(itemPeriodEnd * 1000).toISOString()
               : null;
 
             const { data: subInsertData, error: subError } = await supabase
@@ -263,8 +266,10 @@ export async function POST(request: NextRequest) {
           .single();
 
         if (profile) {
-          const currentPeriodEnd = eventData.current_period_end
-            ? new Date(eventData.current_period_end * 1000).toISOString()
+          const currentPeriodEnd = eventData.items?.data?.[0]?.current_period_end
+            ? new Date(
+                eventData.items.data[0].current_period_end * 1000
+              ).toISOString()
             : null;
 
           const { error } = await supabase.from("subscriptions").upsert(
@@ -301,8 +306,10 @@ export async function POST(request: NextRequest) {
         console.log("- Cancel at period end:", eventData.cancel_at_period_end);
 
         // Atualizar subscription no banco
-        const currentPeriodEnd = eventData.current_period_end
-          ? new Date(eventData.current_period_end * 1000).toISOString()
+        const currentPeriodEnd = eventData.items?.data?.[0]?.current_period_end
+          ? new Date(
+              eventData.items.data[0].current_period_end * 1000
+            ).toISOString()
           : null;
 
         const { error } = await supabase

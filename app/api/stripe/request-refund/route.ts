@@ -22,6 +22,8 @@ export async function POST() {
       .from("subscriptions")
       .select("id, stripe_subscription_id")
       .eq("user_id", user.id)
+      .order("created_at", { ascending: false })
+      .limit(1)
       .single();
 
     if (!subscription?.stripe_subscription_id) {

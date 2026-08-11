@@ -6,6 +6,7 @@ import { PlaylistCard } from "./PlaylistCard";
 import { useState } from "react";
 import { PlaylistForm } from "./PlaylistForm";
 import { Client } from "@/interfaces/Clients";
+import { UsageBadge } from "@/components/dashboard/UsageBadge";
 
 interface Props {
   playlists: Playlist[] | null;
@@ -16,6 +17,7 @@ interface Props {
 export function Playlists({ playlists, clients }: Props) {
   const [editingPlaylist, setEditingPlaylist] = useState<Playlist | null>(null);
   const [showForm, setShowForm] = useState(false);
+  const playlistsCount = playlists?.length ?? 0;
   return (
     <div className="space-y-8">
       <header className="flex justify-between items-center">
@@ -35,6 +37,8 @@ export function Playlists({ playlists, clients }: Props) {
           Criar Playlist
         </button>
       </header>
+
+      <UsageBadge label="Playlists" current={playlistsCount} />
 
       {showForm && (
         <PlaylistForm

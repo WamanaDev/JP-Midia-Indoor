@@ -20,6 +20,8 @@ export async function POST(request: NextRequest) {
       .from("subscriptions")
       .select("stripe_customer_id")
       .eq("user_id", user.id)
+      .order("created_at", { ascending: false })
+      .limit(1)
       .single();
 
     if (!subscription?.stripe_customer_id) {

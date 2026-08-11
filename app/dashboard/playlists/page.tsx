@@ -1,4 +1,5 @@
 import { AccessBlocked } from "@/components/dashboard/AccessBlocked";
+import { OverLimitBanner } from "@/components/dashboard/OverLimitBanner";
 import { Playlists } from "@/components/dashboard/playlists/Playlists";
 import { checkSubscriptionAccess } from "@/lib/stripe/subscription-guard";
 import { createClient } from "@/utils/supabase/server";
@@ -22,24 +23,11 @@ export default async function PlaylistsPage() {
   // ✅ Verificar acesso
   const access = await checkSubscriptionAccess(session.user.id);
 
-  // ✅ Bloquear se não tiver acesso
-  if (!access.canAccess) {
-    const reason = access.isPastDue
-      ? "past_due"
-      : access.exceededScreens
-      ? "exceeded_screens"
-      : "exceeded_storage";
-
-    return (
-      <AccessBlocked
-        reason={reason}
-        message={access.message!}
-        currentScreens={access.currentScreens}
-        maxScreens={access.maxScreens}
-        currentStorageGb={access.currentStorageGb}
-        maxStorageGb={access.maxStorageGb}
-      />
-    );
+  // ✅ Pagamento pendente continua bloqueando por completo. Limite de telas
+  // ou armazenamento excedido não impede playlists (são ilimitadas em todo
+  // plano) — só mostra um aviso.
+  if (access.isPastDue) {
+    return <AccessBlocked reason="past_due" message={access.message!} />;
   }
 
   const [
@@ -69,8 +57,9 @@ export default async function PlaylistsPage() {
   if (clientsError) throw clientsError;
 
   return (
-    <span>
+    <>
+      {!access.canAccess && <OverLimitBanner message={access.message!} />}
       <Playlists playlists={playlists} clients={clients} />
-    </span>
+    </>
   );
 }
