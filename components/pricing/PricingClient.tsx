@@ -22,15 +22,8 @@ export function PricingClient({
   const [selectedPlan, setSelectedPlan] = useState<Plan | null>(null);
 
   const handleSelectPlan = async (plan: Plan) => {
-    console.log("🎯 handleSelectPlan chamado:", {
-      planId: plan.id,
-      planName: plan.name,
-      currentPlanId: currentPlanId,
-    });
-
     // Se já está no plano, não fazer nada
     if (plan.id === currentPlanId) {
-      console.log("⚠️ Já está neste plano, abortando");
       return;
     }
 
@@ -38,13 +31,12 @@ export function PricingClient({
     // não passa por checkout nem pelo fluxo de downgrade, só direciona
     // para contato comercial.
     if (plan.price === null) {
-      window.location.href = "mailto:contato@jpmidia.com";
+      window.location.href = "mailto:contato@wamanadev.com.br";
       return;
     }
 
     // Plano gratuito de verdade (price === 0), não precisa de checkout
     if (plan.price === 0) {
-      console.log("⚠️ Plano gratuito selecionado");
       // Se tem plano atual pago, mostrar modal de confirmação de downgrade
       if (currentPlanId) {
         const currentPlan = plans.find((p) => p.id === currentPlanId);
@@ -53,7 +45,6 @@ export function PricingClient({
           currentPlan.price !== null &&
           currentPlan.price > 0
         ) {
-          console.log("📋 Abrindo modal de downgrade");
           setSelectedPlan(plan);
           setShowChangePlanModal(true);
           return;
@@ -64,18 +55,15 @@ export function PricingClient({
 
     // Se tem plano atual, mostrar modal de confirmação
     if (currentPlanId) {
-      console.log("📋 Tem plano atual, abrindo modal de confirmação");
       setSelectedPlan(plan);
       setShowChangePlanModal(true);
       return;
     }
 
     // Se não tem plano atual, ir direto para checkout
-    console.log("🚀 Iniciando checkout direto (sem modal)");
     setLoading(plan.id);
 
     try {
-      console.log("📡 Fazendo requisição para /api/stripe/change-plan");
       const response = await fetch("/api/stripe/change-plan", {
         method: "POST",
         headers: {
@@ -84,30 +72,19 @@ export function PricingClient({
         body: JSON.stringify({ new_plan_id: plan.id }),
       });
 
-      console.log("📡 Resposta recebida:", {
-        status: response.status,
-        ok: response.ok,
-      });
-
       const data = await response.json();
-      console.log("📦 Dados da resposta:", data);
 
       if (!response.ok) {
-        console.error("❌ Resposta não OK:", data);
         throw new Error(data.error || "Erro ao criar sessão de checkout");
       }
 
       if (data.url) {
-        console.log("✅ URL recebida, redirecionando para:", data.url);
-        console.log("🔄 Executando window.location.href...");
         window.location.href = data.url;
-        console.log("✅ window.location.href executado");
       } else {
-        console.error("❌ URL não retornada na resposta:", data);
         throw new Error("URL de checkout não foi retornada");
       }
     } catch (error: any) {
-      console.error("❌ Erro capturado no catch:", error);
+      console.error("Erro ao processar checkout:", error);
       alert(error.message || "Erro ao processar checkout. Tente novamente.");
       setLoading(null);
     }

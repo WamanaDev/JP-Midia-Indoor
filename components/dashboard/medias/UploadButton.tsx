@@ -78,8 +78,6 @@ export default function UploadButton() {
 
       await uploadMediaAction(formData);
 
-      console.log("✅ Upload realizado com sucesso!");
-
       // Limpar o input
       if (fileInputRef.current) {
         fileInputRef.current.value = "";

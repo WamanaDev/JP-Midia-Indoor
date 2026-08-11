@@ -61,15 +61,11 @@ function UpdateCardFormContent() {
 
         // ✅ Tentar processar pagamento pendente
         try {
-          const retryResponse = await fetch("/api/stripe/retry-payment", {
+          await fetch("/api/stripe/retry-payment", {
             method: "POST",
           });
-
-          if (retryResponse.ok) {
-            console.log("✅ Pagamento pendente processado");
-          }
         } catch (retryError) {
-          console.error("⚠️ Erro ao processar pagamento pendente:", retryError);
+          console.error("Erro ao processar pagamento pendente:", retryError);
           // Não bloquear o fluxo se falhar
         }
 

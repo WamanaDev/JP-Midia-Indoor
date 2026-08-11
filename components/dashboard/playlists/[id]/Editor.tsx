@@ -22,7 +22,6 @@ export default function Editor({
   documents,
 }: Props) {
   const [activeTab, setActiveTab] = useState<"info" | "timeline">("timeline");
-  console.log(playlist);
   return (
     <div className="space-y-6">
       <PlaylistHeader playlist={playlist} />

@@ -47,7 +47,6 @@ export function UsageDashboardClient({ usage: initialUsage }: Props) {
         if (response.status === 402) {
           await response.json();
           setShowPastDueBanner(true);
-          console.log("⚠️ Pagamento pendente detectado");
           return;
         }
 
@@ -55,7 +54,6 @@ export function UsageDashboardClient({ usage: initialUsage }: Props) {
           const data = await response.json();
           setUsage(data);
           setShowPastDueBanner(data.is_past_due || false);
-          console.log("✅ Usage atualizado, is_past_due:", data.is_past_due);
         }
       } catch (error) {
         console.error("Erro ao buscar uso:", error);
