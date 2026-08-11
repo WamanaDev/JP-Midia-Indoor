@@ -9,7 +9,7 @@ const csp = [
   `img-src 'self' data: blob: ${R2_PUBLIC_ORIGIN}`,
   `media-src 'self' blob: ${R2_PUBLIC_ORIGIN}`,
   "font-src 'self' data:",
-  "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.stripe.com",
+  `connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.stripe.com ${R2_PUBLIC_ORIGIN}`,
   "frame-src https://js.stripe.com https://hooks.stripe.com",
   "frame-ancestors 'none'",
   "base-uri 'self'",

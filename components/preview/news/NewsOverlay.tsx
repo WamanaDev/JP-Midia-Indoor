@@ -110,7 +110,7 @@ export function NewsOverlay({ config }: NewsOverlayProps) {
   const item = items[index];
 
   return (
-    <div className="pointer-events-none select-none fixed bottom-6 left-1/4 -translate-x-1/4 z-30">
+    <div className="pointer-events-none select-none absolute bottom-6 left-1/2 -translate-x-1/2 z-150">
       <div
         className={`
           transition-all duration-500 ease-out transform

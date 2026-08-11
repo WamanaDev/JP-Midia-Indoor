@@ -24,6 +24,7 @@ import {
   Wallet,
 } from "lucide-react";
 import { ReactNode, useState } from "react";
+import { OverlayToggle } from "./shared/OverlayToggle";
 type NewsConfig = Record<string, string[]>;
 
 interface PlaylistConfig {
@@ -664,39 +665,10 @@ export function NewsForm({ value, onChange }: MediaFormProps) {
 
   return (
     <div className="space-y-8">
-      {/* ===== OVERLAY ===== */}
-      <div className="space-y-3">
-        <label className="block text-sm font-medium text-gray-900 dark:text-white">
-          Sobrepor à mídia?
-        </label>
-
-        <div className="flex items-center gap-4">
-          <button
-            type="button"
-            onClick={() => updateConfig({ overlay: !config.overlay })}
-            className={`
-              relative flex w-16 h-8 rounded-full transition
-              ${
-                config.overlay
-                  ? "bg-linear-to-r from-green-400 to-blue-500"
-                  : "bg-gray-300 dark:bg-gray-600"
-              }
-            `}
-          >
-            <span
-              className={`
-                absolute top-1 w-6 h-6 bg-white rounded-full shadow
-                transition-transform
-                ${config.overlay ? "translate-x-9" : "translate-x-1"}
-              `}
-            />
-          </button>
-
-          <span className="font-medium text-gray-700 dark:text-gray-300">
-            {config.overlay ? "Sim" : "Não"}
-          </span>
-        </div>
-      </div>
+      <OverlayToggle
+        enabled={config.overlay}
+        onToggle={() => updateConfig({ overlay: !config.overlay })}
+      />
 
       {/* ===== PROVIDERS ===== */}
       <div className="space-y-3">

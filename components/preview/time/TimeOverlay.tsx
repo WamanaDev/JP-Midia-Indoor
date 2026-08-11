@@ -2,6 +2,12 @@
 
 import { useEffect, useState } from "react";
 import { Clock } from "lucide-react";
+import { ClockConfig } from "@/interfaces/Preview";
+import { OrbitClock } from "./styles/OrbitClock";
+import { FlipDigitClock } from "./styles/FlipDigitClock";
+import { ThreeBadge } from "@/components/preview/shared/ThreeBadge";
+
+const DEFAULT_CLOCK_LABEL = "Novo local";
 
 interface TimeOverlayProps {
   config: {
@@ -18,20 +24,18 @@ interface TimeOverlayProps {
       | "analog-neon"
       | "analog-corporate"
       | "analog-tech"
-      | "analog-dark";
-    clocks: {
-      id: string;
-      label: string;
-      timezone: string;
-      format: "12h" | "24h";
-    }[];
+      | "analog-dark"
+      | "orbit"
+      | "flip3d"
+      | "sphere";
+    clocks: ClockConfig[];
   };
 }
 
 export function TimeOverlay({ config }: TimeOverlayProps) {
   const [now, setNow] = useState(new Date());
   const [index, setIndex] = useState(0);
-  const getTimeParts = (date: Date, timezone: string) => {
+  const getTimeParts = (date: Date, timezone: string | undefined) => {
     const parts = new Intl.DateTimeFormat("pt-BR", {
       timeZone: timezone,
       hour: "numeric",
@@ -81,7 +85,7 @@ export function TimeOverlay({ config }: TimeOverlayProps) {
   }[config.position];
 
   const formatter = new Intl.DateTimeFormat("pt-BR", {
-    timeZone: clock.timezone,
+    timeZone: clock.location?.timezone,
     hour: "2-digit",
     minute: "2-digit",
     hour12: clock.format === "12h",
@@ -89,10 +93,18 @@ export function TimeOverlay({ config }: TimeOverlayProps) {
 
   const time = formatter.format(now);
 
+  const displayLabel =
+    clock.label && clock.label !== DEFAULT_CLOCK_LABEL
+      ? clock.label
+      : clock.location?.name ?? clock.label;
+
   /* ===================== ANALÓGICOS ===================== */
 
   const renderAnalog = (variant: string) => {
-    const { hours, minutes, seconds } = getTimeParts(now, clock.timezone);
+    const { hours, minutes, seconds } = getTimeParts(
+      now,
+      clock.location?.timezone
+    );
     const hourDeg = (hours % 12) * 30 + minutes * 0.5;
     const minuteDeg = minutes * 6 + seconds * 0.1;
 
@@ -223,6 +235,26 @@ export function TimeOverlay({ config }: TimeOverlayProps) {
           </div>
         );
 
+      /* ===== NOVOS (GSAP por valor + Three.js) ===== */
+
+      case "orbit":
+        return <OrbitClock time={time} />;
+
+      case "flip3d":
+        return <FlipDigitClock time={time} />;
+
+      case "sphere":
+        return (
+          <div className="relative w-24 h-24 flex items-center justify-center">
+            <div className="absolute inset-0 flex items-center justify-center">
+              <ThreeBadge size={96} geometry="icosahedron" />
+            </div>
+            <span className="relative text-lg font-semibold text-white drop-shadow-[0_1px_4px_rgba(0,0,0,0.8)]">
+              {time}
+            </span>
+          </div>
+        );
+
       /* ===== fallback ===== */
 
       default:
@@ -233,11 +265,11 @@ export function TimeOverlay({ config }: TimeOverlayProps) {
   return (
     <div
       key={clock.id}
-      className={`fixed z-50 flex flex-col gap-2 ${positionClass}
+      className={`absolute z-150 flex flex-col gap-2 ${positionClass}
         animate-[overlay-fade_0.6s_ease-out]`}
     >
       <span className="m-auto text-center justify-center text-xs uppercase tracking-wide text-gray-300">
-        {clock.label}
+        {displayLabel}
       </span>
 
       {config.style.startsWith("analog")

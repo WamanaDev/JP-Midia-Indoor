@@ -369,23 +369,21 @@ export function PlayerCore({ playlistId }: PlayerCoreProps) {
 
       {/* ===================== */}
       {/* OVERLAYS              */}
+      {/* Each overlay positions itself (via config.position) as an     */}
+      {/* absolute child of this relative root — they must not wrap in  */}
+      {/* fixed-position containers, which would escape this boundary   */}
+      {/* and fight the preview modal's own chrome for stacking order.  */}
       {/* ===================== */}
       {newsOverlay.map((item) => (
-        <div key={item.id} className="absolute bottom-0 left-0 right-0 z-20">
-          <NewsOverlay config={item.config} />
-        </div>
+        <NewsOverlay key={item.id} config={item.config} />
       ))}
 
       {temperatureOverlay.map((item) => (
-        <div key={item.id} className="absolute top-4 right-4 z-20 text-white">
-          <WeatherOverlay config={item.config} />
-        </div>
+        <WeatherOverlay key={item.id} config={item.config} />
       ))}
 
       {timeOverlay.map((item) => (
-        <div key={item.id} className="absolute top-4 left-4 z-20 text-white">
-          <TimeOverlay config={item.config} />
-        </div>
+        <TimeOverlay key={item.id} config={item.config} />
       ))}
     </div>
   );

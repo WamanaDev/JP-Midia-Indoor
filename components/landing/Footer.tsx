@@ -1,11 +1,12 @@
 "use client";
 
+import { ShieldCheck, Lock, BadgeCheck } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 
 export function Footer() {
   return (
-    <footer className="bg-[#111827] text-gray-300">
+    <footer className="bg-[#05070D] text-gray-400 border-t border-white/5">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <div className="grid md:grid-cols-4 gap-12 mb-12">
           <div className="col-span-2">
@@ -25,11 +26,26 @@ export function Footer() {
               </span>
             </div>
 
-            <p className="text-gray-400 leading-relaxed max-w-md">
-              A plataforma completa para gestão de telas digitais em ambientes
-              comerciais. Tecnologia confiável, controle total e automação para
-              elevar o padrão da sua comunicação.
+            <p className="text-gray-500 leading-relaxed max-w-md mb-6">
+              A plataforma completa para gestão de telas digitais em
+              ambientes comerciais. Tecnologia confiável, controle total e
+              automação para elevar o padrão da sua comunicação.
             </p>
+
+            <div className="flex flex-wrap gap-4 text-xs text-gray-500">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white/[0.03] border border-white/10 rounded-full">
+                <ShieldCheck className="w-3.5 h-3.5 text-[#10B981]" />
+                Conforme a LGPD
+              </span>
+              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white/[0.03] border border-white/10 rounded-full">
+                <Lock className="w-3.5 h-3.5 text-[#10B981]" />
+                Pagamento seguro via Stripe
+              </span>
+              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white/[0.03] border border-white/10 rounded-full">
+                <BadgeCheck className="w-3.5 h-3.5 text-[#10B981]" />
+                7 dias de garantia
+              </span>
+            </div>
           </div>
 
           <div>
@@ -51,6 +67,11 @@ export function Footer() {
                   Planos e Preços
                 </a>
               </li>
+              <li>
+                <a href="#faq" className="hover:text-white transition-colors">
+                  Dúvidas frequentes
+                </a>
+              </li>
             </ul>
           </div>
 
@@ -58,7 +79,10 @@ export function Footer() {
             <h3 className="text-white font-semibold mb-4">Empresa</h3>
             <ul className="space-y-3">
               <li>
-                <Link href="/contact" className="hover:text-white transition-colors">
+                <Link
+                  href="/contact"
+                  className="hover:text-white transition-colors"
+                >
                   Contato
                 </Link>
               </li>
@@ -74,8 +98,8 @@ export function Footer() {
           </div>
         </div>
 
-        <div className="pt-8 border-t border-gray-800 flex flex-col sm:flex-row justify-between items-center gap-4">
-          <p className="text-gray-400 text-sm">
+        <div className="pt-8 border-t border-white/5 flex flex-col sm:flex-row justify-between items-center gap-4">
+          <p className="text-gray-500 text-sm">
             © {new Date().getFullYear()} JP Mídia Indoor. Todos os direitos
             reservados.
           </p>

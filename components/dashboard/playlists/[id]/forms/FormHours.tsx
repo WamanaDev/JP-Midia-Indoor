@@ -2,19 +2,15 @@
 
 import { MediaFormProps } from "@/interfaces/Medias";
 import { LocationValue } from "@/interfaces/Preview";
-import { Clock, Trash2, Plus } from "lucide-react";
-import { LocationSelect } from "./LocationSelect";
+import { Clock, Plus } from "lucide-react";
+import { OverlayToggle } from "./shared/OverlayToggle";
+import { PositionPicker, OverlayPosition } from "./shared/PositionPicker";
+import { StylePicker, StyleOption } from "./shared/StylePicker";
+import { LocationEntryCard } from "./shared/LocationEntryCard";
 
 /* ================= CONSTS ================= */
 
-const POSITIONS = [
-  { id: "top-left", label: "Superior Esquerdo" },
-  { id: "top-right", label: "Superior Direito" },
-  { id: "bottom-left", label: "Inferior Esquerdo" },
-  { id: "bottom-right", label: "Inferior Direito" },
-];
-
-const STYLES = [
+const STYLES: StyleOption[] = [
   {
     id: "minimal",
     label: "Minimalista",
@@ -82,6 +78,40 @@ const STYLES = [
       </div>
     ),
   },
+  {
+    id: "orbit",
+    label: "Órbita",
+    preview: (
+      <div className="relative w-16 h-16 flex items-center justify-center">
+        <div className="absolute inset-0 rounded-full border border-white/30" />
+        <div className="absolute w-2 h-2 rounded-full bg-cyan-300 shadow-[0_0_8px_2px_rgba(34,211,238,0.7)] top-1 left-1/2 -translate-x-1/2" />
+        <span className="text-sm font-semibold text-white">14:32</span>
+      </div>
+    ),
+  },
+  {
+    id: "flip3d",
+    label: "Flip 3D",
+    preview: (
+      <div style={{ perspective: 300 }}>
+        <div className="bg-black text-white font-mono text-lg px-3 py-2 rounded-lg shadow-lg [transform:rotateX(-18deg)]">
+          14:32
+        </div>
+      </div>
+    ),
+  },
+  {
+    id: "sphere",
+    label: "Esfera 3D",
+    preview: (
+      <div className="relative w-16 h-16 flex items-center justify-center">
+        <div className="absolute w-14 h-14 rounded-2xl bg-linear-to-br from-blue-500 to-yellow-400 opacity-70 rotate-12" />
+        <span className="relative text-sm font-semibold text-white drop-shadow">
+          14:32
+        </span>
+      </div>
+    ),
+  },
 ];
 
 /* ================= TYPES ================= */
@@ -104,25 +134,13 @@ export function TimeForm({ value, onChange }: MediaFormProps) {
     clocks: [] as ClockConfig[],
     ...(value.config ?? {}),
   };
-  const isClockValid = (clock: ClockConfig) =>
-    !!clock.location && !!clock.location.lat && !!clock.location.lon;
+
   /* ================= UPDATE CONFIG ================= */
 
   const updateConfig = (partial: Partial<typeof config>) => {
-    const nextConfig = { ...config, ...partial };
-
-    const hasInvalidClock = nextConfig.clocks?.some(
-      (c: ClockConfig) => !isClockValid(c)
-    );
-
-    if (hasInvalidClock) {
-      console.warn("Config inválida: relógio sem localização");
-      return;
-    }
-
     onChange({
       ...value,
-      config: nextConfig,
+      config: { ...config, ...partial },
     });
   };
 
@@ -136,88 +154,23 @@ export function TimeForm({ value, onChange }: MediaFormProps) {
 
   return (
     <div className="space-y-8">
-      {/* ================= OVERLAY ================= */}
-      <div className="space-y-3">
-        <label className="block text-sm font-medium">Sobrepor à mídia?</label>
+      <OverlayToggle
+        enabled={config.overlay}
+        onToggle={() => updateConfig({ overlay: !config.overlay, position: "" })}
+      />
 
-        <button
-          type="button"
-          onClick={() =>
-            updateConfig({ overlay: !config.overlay, position: "" })
-          }
-          className={`relative w-16 h-8 rounded-full transition ${
-            config.overlay
-              ? "bg-linear-to-r from-green-400 to-blue-500"
-              : "bg-gray-300"
-          }`}
-        >
-          <span
-            className={`absolute top-1 left-1 w-6 h-6 bg-white rounded-full transition ${
-              config.overlay ? "translate-x-8" : ""
-            }`}
-          />
-        </button>
-      </div>
-
-      {/* ================= POSITION ================= */}
       {config.overlay && (
-        <div className="space-y-3">
-          <label className="block text-sm font-medium text-gray-900 dark:text-white">
-            Posição na tela
-          </label>
-
-          <div className="grid grid-cols-2 grid-rows-2 w-full md:w-60 h-60 rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700">
-            {POSITIONS.map((pos) => (
-              <button
-                key={pos.id}
-                type="button"
-                onClick={() => updateConfig({ position: pos.id })}
-                className={`text-xs font-medium flex items-center justify-center transition-colors
-                  ${
-                    config.position === pos.id
-                      ? "bg-blue-600 text-white"
-                      : "bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-                  }
-                `}
-              >
-                {pos.label}
-              </button>
-            ))}
-          </div>
-        </div>
+        <PositionPicker
+          value={config.position}
+          onChange={(position: OverlayPosition) => updateConfig({ position })}
+        />
       )}
 
-      {/* ================= STYLE ================= */}
-      <div className="space-y-3">
-        <h4 className="text-sm font-semibold text-gray-900 dark:text-white">
-          Modelo de exibição
-        </h4>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {STYLES.map((style) => (
-            <button
-              key={style.id}
-              type="button"
-              onClick={() => updateConfig({ style: style.id })}
-              className={`flex flex-col items-center justify-between p-4 border rounded-xl shadow-sm transition
-                ${
-                  config.style === style.id
-                    ? "border-blue-500 bg-blue-50 dark:bg-gray-900"
-                    : "border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800"
-                }
-              `}
-            >
-              <div className="flex items-center justify-center h-20 w-full bg-gray-900 rounded-lg">
-                {style.preview}
-              </div>
-
-              <span className="mt-3 font-medium text-gray-900 dark:text-white">
-                {style.label}
-              </span>
-            </button>
-          ))}
-        </div>
-      </div>
+      <StylePicker
+        styles={STYLES}
+        value={config.style}
+        onChange={(style) => updateConfig({ style })}
+      />
 
       {/* ================= CLOCKS ================= */}
       <div className="space-y-4">
@@ -248,39 +201,18 @@ export function TimeForm({ value, onChange }: MediaFormProps) {
         </div>
 
         {config.clocks.map((clock, index) => (
-          <div
+          <LocationEntryCard
             key={clock.id}
-            className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 space-y-3"
+            label={clock.label}
+            onLabelChange={(label) => updateClock(index, { label })}
+            location={clock.location}
+            onLocationChange={(location) => updateClock(index, { location })}
+            onRemove={() =>
+              updateConfig({
+                clocks: config.clocks.filter((c) => c.id !== clock.id),
+              })
+            }
           >
-            <div className="flex items-center justify-between gap-3">
-              <input
-                value={clock.label}
-                onChange={(e) => updateClock(index, { label: e.target.value })}
-                className="flex-1 bg-transparent border-b border-gray-300 dark:border-gray-600 text-sm focus:outline-none"
-              />
-
-              <button
-                type="button"
-                onClick={() =>
-                  updateConfig({
-                    clocks: config.clocks.filter((c) => c.id !== clock.id),
-                  })
-                }
-              >
-                <Trash2 className="w-4 h-4 text-red-500" />
-              </button>
-            </div>
-
-            {/* 🔥 LOCALIZAÇÃO DINÂMICA */}
-            {!clock.location && (
-              <span className="text-xs text-red-500">
-                Selecione uma localização válida
-              </span>
-            )}
-            <LocationSelect
-              value={clock.location}
-              onChange={(loc) => updateClock(index, { location: loc })}
-            />
             <select
               value={clock.format}
               onChange={(e) =>
@@ -288,12 +220,12 @@ export function TimeForm({ value, onChange }: MediaFormProps) {
                   format: e.target.value as "12h" | "24h",
                 })
               }
-              className="w-full rounded-lg bg-gray-100 p-2 text-sm"
+              className="w-full rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white border border-gray-300 dark:border-gray-700 p-2 text-sm"
             >
               <option value="24h">Formato 24h</option>
               <option value="12h">Formato 12h</option>
             </select>
-          </div>
+          </LocationEntryCard>
         ))}
       </div>
     </div>

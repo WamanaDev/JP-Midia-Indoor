@@ -4,7 +4,6 @@ import { uploadMediaAction } from "@/app/dashboard/medias/actions";
 import { LimitReachedModal } from "@/components/dashboard/LimitReachedModal";
 import { useCheckLimits } from "@/hooks/useCheckLimits";
 import { generateVideoThumbnail } from "@/utils/generateVideoThumbnail";
-import { generatePdfThumbnail } from "@/utils/pdf";
 import { AlertCircle, Upload } from "lucide-react";
 import { useRef, useState } from "react";
 
@@ -64,6 +63,12 @@ export default function UploadButton() {
         }
       } else if (file.type === "application/pdf") {
         try {
+          // Dynamic import: pdfjs-dist touches browser-only APIs (DOMMatrix)
+          // at module evaluation time, so it must never load during SSR —
+          // a static import here would crash the server render of any page
+          // that includes this component, even though PDFs are only
+          // touched inside this click handler.
+          const { generatePdfThumbnail } = await import("@/utils/pdf");
           const thumbBlob = await generatePdfThumbnail(file);
           formData.append("thumbnail", thumbBlob, "thumbnail.jpg");
         } catch (thumbErr) {

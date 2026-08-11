@@ -46,7 +46,10 @@ export type TimeConfig = {
     | "analog-neon"
     | "analog-corporate"
     | "analog-tech"
-    | "analog-dark";
+    | "analog-dark"
+    | "orbit"
+    | "flip3d"
+    | "sphere";
   layout: "vertical" | "horizontal";
   clocks: ClockConfig[];
 };

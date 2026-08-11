@@ -31,7 +31,8 @@ CREATE TYPE public.type_playlist_item AS ENUM (
     'temperature',
     'news',
     'stock',
-    'hours'
+    'hours',
+    'document'
 );
 
 

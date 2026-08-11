@@ -2,6 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { Thermometer } from "lucide-react";
+import { GaugeWeather } from "./styles/GaugeWeather";
+import { WaveWeather } from "./styles/WaveWeather";
+import { ThreeBadge } from "@/components/preview/shared/ThreeBadge";
 
 /* ================= TYPES ================= */
 
@@ -30,7 +33,10 @@ interface WeatherOverlayProps {
       | "neon"
       | "corporate"
       | "tech"
-      | "dark";
+      | "dark"
+      | "gauge"
+      | "wave"
+      | "sphere";
     locations: WeatherLocation[];
   };
 }
@@ -123,6 +129,13 @@ export function WeatherOverlay({ config }: WeatherOverlayProps) {
       ? `${Math.round(weather.temperature)}°${weather.unit}`
       : "--";
 
+  const celsius =
+    weather?.temperature == null
+      ? null
+      : weather.unit === "F"
+      ? ((weather.temperature - 32) * 5) / 9
+      : weather.temperature;
+
   /* ================= RENDER TEMP ================= */
 
   const renderTemp = () => {
@@ -191,6 +204,26 @@ export function WeatherOverlay({ config }: WeatherOverlayProps) {
           </div>
         );
 
+      /* ===== NOVOS (GSAP por valor + Three.js) ===== */
+
+      case "gauge":
+        return <GaugeWeather value={value} celsius={celsius} />;
+
+      case "wave":
+        return <WaveWeather value={value} />;
+
+      case "sphere":
+        return (
+          <div className="relative w-24 h-24 flex items-center justify-center">
+            <div className="absolute inset-0 flex items-center justify-center">
+              <ThreeBadge size={96} geometry="torus" color={0x0ea5e9} />
+            </div>
+            <span className="relative text-lg font-semibold text-white drop-shadow-[0_1px_4px_rgba(0,0,0,0.8)]">
+              {value}
+            </span>
+          </div>
+        );
+
       default:
         return <div className="text-2xl font-semibold text-white">{value}</div>;
     }
@@ -201,7 +234,7 @@ export function WeatherOverlay({ config }: WeatherOverlayProps) {
   return (
     <div
       key={location.id}
-      className={`fixed z-50 flex flex-col gap-2 ${positionClass}
+      className={`absolute z-150 flex flex-col gap-2 ${positionClass}
         animate-[overlay-fade_0.6s_ease-out]`}
     >
       <span className="m-auto text-center text-xs uppercase tracking-wide text-gray-300">

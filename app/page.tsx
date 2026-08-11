@@ -1,10 +1,12 @@
 import { About } from "@/components/landing/About";
 import { CTA } from "@/components/landing/CTA";
+import { FAQ } from "@/components/landing/FAQ";
 import { Features } from "@/components/landing/Features";
 import { Footer } from "@/components/landing/Footer";
 import { Header } from "@/components/landing/Header";
 import { Hero } from "@/components/landing/Hero";
 import { Plans } from "@/components/landing/Plans";
+import { SocialProof } from "@/components/landing/SocialProof";
 import { createClient } from "@/utils/supabase/server";
 
 export default async function Home() {
@@ -23,13 +25,15 @@ export default async function Home() {
   const userExists = !!session?.user; // transforma em booleano
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-[#05070D]">
       <Header user={userExists} />
-      <div className="pt-20">
+      <div>
         <Hero user={userExists} />
+        <SocialProof />
         <Features />
         <About />
         <Plans profile={profile.data} plans={plans.data} user={userExists} />
+        <FAQ />
         <CTA user={userExists} />
         <Footer />
       </div>
