@@ -7,7 +7,8 @@ import {
 import { Client } from "@/interfaces/Clients";
 import { Playlist } from "@/interfaces/Playlists";
 import { Screen } from "@/interfaces/Screens";
-import { useState } from "react";
+import { AlertCircle } from "lucide-react";
+import { useActionState, useState } from "react";
 
 interface ScreenFormProps {
   screen?: Screen; // edição
@@ -27,6 +28,9 @@ export function ScreenForm({
   const [code, setCode] = useState("");
   const [vinculation, setVinculation] = useState(false);
   const [error, setError] = useState("");
+  const [state, formAction, isPending] = useActionState(upsertScreenAction, {
+    error: null,
+  });
 
   const handleCheckCode = async () => {
     if (!code.trim()) {
@@ -56,49 +60,64 @@ export function ScreenForm({
         {isEditing ? "Editar Dispositivo" : "Novo Dispositivo"}
       </h3>
 
-      <form className="space-y-4" action={upsertScreenAction}>
-        {!isEditing && step === 1 && (
-          <>
-            <div>
-              <label className="block text-sm font-medium text-[#111827] dark:text-white">
-                Código
-              </label>
-              {error && <span className="text-xs text-red-400">{error}</span>}
-              <input
-                type="text"
-                onChange={(e) => setCode(e.target.value.toUpperCase())}
-                required
-                className={`mt-2 uppercase w-full px-4 py-2 border ${
-                  error
-                    ? `border-red-400`
-                    : `border-gray-300 dark:border-gray-600`
-                } rounded-lg focus:ring-2 focus:ring-[#3B82F6] focus:border-transparent outline-none bg-white dark:bg-gray-800 text-[#111827] dark:text-white`}
-                placeholder="Código de vinculação"
-              />
-            </div>
-            <div className="flex gap-3">
-              <button
-                type="button"
-                disabled={vinculation || !code.trim()}
-                onClick={handleCheckCode}
-                className="px-6 py-2 bg-[#3B82F6] text-white font-semibold rounded-lg hover:bg-[#1E3A8A] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {vinculation ? "Vinculando" : "Vincular"}
-              </button>
-              <button
-                type="button"
-                onClick={onCancel}
-                className="px-6 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 font-semibold rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
-              >
-                Cancelar
-              </button>
-            </div>
-          </>
-        )}
+      {state.error && (
+        <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg flex items-start gap-2">
+          <AlertCircle className="w-5 h-5 text-red-600 dark:text-red-400 shrink-0 mt-0.5" />
+          <p className="text-sm text-red-800 dark:text-red-300">
+            {state.error}
+          </p>
+        </div>
+      )}
 
-        {(isEditing || step === 2) && (
-          <>
-            {isEditing && <input type="hidden" name="id" value={screen!.id} />}
+      {!isEditing && step === 1 && (
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-[#111827] dark:text-white">
+              Código
+            </label>
+            {error && <span className="text-xs text-red-400">{error}</span>}
+            <input
+              type="text"
+              value={code}
+              onChange={(e) => setCode(e.target.value.toUpperCase())}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  handleCheckCode();
+                }
+              }}
+              required
+              className={`mt-2 uppercase w-full px-4 py-2 border ${
+                error
+                  ? `border-red-400`
+                  : `border-gray-300 dark:border-gray-600`
+              } rounded-lg focus:ring-2 focus:ring-[#3B82F6] focus:border-transparent outline-none bg-white dark:bg-gray-800 text-[#111827] dark:text-white`}
+              placeholder="Código de vinculação"
+            />
+          </div>
+          <div className="flex gap-3">
+            <button
+              type="button"
+              disabled={vinculation || !code.trim()}
+              onClick={handleCheckCode}
+              className="px-6 py-2 bg-[#3B82F6] text-white font-semibold rounded-lg hover:bg-[#1E3A8A] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {vinculation ? "Vinculando" : "Vincular"}
+            </button>
+            <button
+              type="button"
+              onClick={onCancel}
+              className="px-6 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 font-semibold rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+            >
+              Cancelar
+            </button>
+          </div>
+        </div>
+      )}
+
+      {(isEditing || step === 2) && (
+        <form className="space-y-4" action={formAction}>
+          {isEditing && <input type="hidden" name="id" value={screen!.id} />}
             {!isEditing && <input type="hidden" name="code" value={code} />}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {/* Nome */}
@@ -207,9 +226,10 @@ export function ScreenForm({
             <div className="flex gap-3">
               <button
                 type="submit"
-                className="cursor-pointer px-6 py-2 bg-[#3B82F6] text-white font-semibold rounded-lg hover:bg-[#1E3A8A] transition-colors"
+                disabled={isPending}
+                className="cursor-pointer px-6 py-2 bg-[#3B82F6] text-white font-semibold rounded-lg hover:bg-[#1E3A8A] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {isEditing ? "Atualizar" : "Criar"}
+                {isPending ? "Salvando..." : isEditing ? "Atualizar" : "Criar"}
               </button>
 
               {onCancel && (
@@ -222,9 +242,8 @@ export function ScreenForm({
                 </button>
               )}
             </div>
-          </>
-        )}
-      </form>
+        </form>
+      )}
     </div>
   );
 }

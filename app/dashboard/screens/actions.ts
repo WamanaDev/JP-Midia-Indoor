@@ -59,22 +59,36 @@ export async function checkDeviceCode(code: string) {
   return { success: true };
 }
 
-export async function upsertScreenAction(formData: FormData) {
+export type UpsertScreenState = { error: string | null };
+
+export async function upsertScreenAction(
+  _prevState: UpsertScreenState,
+  formData: FormData
+): Promise<UpsertScreenState> {
   const supabase = await createClient();
 
   // 1️⃣ Obter usuário logado
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) throw new Error("Usuário não autenticado");
+  if (!user) return { error: "Usuário não autenticado" };
 
   // 2️⃣ Preparar payload para insert/update
   const id = formData.get("id") as string | null;
+  const name = formData.get("name") as string | null;
+  const clientId = formData.get("client_id") as string | null;
+  const location = formData.get("location") as string | null;
+  const playlistId = formData.get("playlist_id") as string | null;
+
+  if (!name?.trim() || !clientId || !location?.trim() || !playlistId) {
+    return { error: "Preencha nome, cliente, localização e playlist." };
+  }
+
   const payload = {
-    name: formData.get("name"),
-    client_id: formData.get("client_id"),
-    location: formData.get("location"),
-    playlist_id: formData.get("playlist_id"),
+    name,
+    client_id: clientId,
+    location,
+    playlist_id: playlistId,
     is_active: formData.get("is_active") === "on",
     user_id: user.id,
     updated_at: new Date().toISOString(),
@@ -103,12 +117,12 @@ export async function upsertScreenAction(formData: FormData) {
 
       if (error) {
         if (error.code === "42501") {
-          alert("Limite de dispositivos atingido para seu plano atual.");
-          return;
+          return {
+            error: "Limite de telas atingido para seu plano atual.",
+          };
         } else {
           console.error("Erro ao criar dispositivo:", error);
-          alert("Erro ao criar dispositivo: " + error.message);
-          return;
+          return { error: "Erro ao criar dispositivo: " + error.message };
         }
       }
 
@@ -122,8 +136,7 @@ export async function upsertScreenAction(formData: FormData) {
     // 4️⃣ Obter JWT do usuário logado
     const { data: sessionData } = await supabase.auth.getSession();
     if (!sessionData?.session) {
-      console.error("Usuário não logado");
-      return;
+      return { error: "Sessão expirada. Faça login novamente." };
     }
     const userJwt = sessionData.session.access_token;
 
@@ -138,8 +151,23 @@ export async function upsertScreenAction(formData: FormData) {
 
     console.log("tokenRes", tokenRes);
 
-    if (tokenErr) throw tokenErr;
-    if (!tokenRes?.jwt) throw new Error("JWT do dispositivo não recebido");
+    if (tokenErr) {
+      // O erro do SDK ("Edge Function returned a non-2xx status code") é
+      // genérico — o corpo de verdade da resposta vem em tokenErr.context.
+      let detail = tokenErr.message;
+      if (tokenErr.context && typeof tokenErr.context.text === "function") {
+        try {
+          detail = await tokenErr.context.clone().text();
+        } catch {
+          // mantém a mensagem genérica se não der pra ler o corpo
+        }
+      }
+      console.error("❌ generate-device-jwt falhou:", detail);
+      return { error: `Erro ao gerar credenciais do dispositivo: ${detail}` };
+    }
+    if (!tokenRes?.jwt) {
+      return { error: "JWT do dispositivo não recebido" };
+    }
 
     const deviceJwt = tokenRes.jwt;
     console.log("JWT do dispositivo gerado:", deviceJwt);
@@ -157,8 +185,11 @@ export async function upsertScreenAction(formData: FormData) {
 
     // 7️⃣ Revalidar rota se necessário
     revalidatePath("/dashboard/screens");
+    return { error: null };
   } catch (err) {
     console.error("Erro no processo:", err);
-    throw err;
+    return {
+      error: err instanceof Error ? err.message : "Erro ao processar dispositivo",
+    };
   }
 }
