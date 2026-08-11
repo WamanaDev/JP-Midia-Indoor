@@ -59,3 +59,5 @@ migration/backup_full.sql
 # project standardizes on yarn; a stray package-lock.json causes
 # mixed-package-manager installs
 package-lock.json
+
+CLAUDE.md
