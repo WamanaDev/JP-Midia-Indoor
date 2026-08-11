@@ -30,6 +30,7 @@ export function LocationSelect({ value, onChange }: Props) {
         country: r.country,
         lat: r.lat,
         lon: r.lon,
+        timezone: r.timezone,
       },
     }));
   };

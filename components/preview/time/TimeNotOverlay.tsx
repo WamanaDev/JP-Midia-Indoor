@@ -2,6 +2,15 @@
 
 import { useEffect, useState } from "react";
 import { Clock } from "lucide-react";
+import { ClockConfig } from "@/interfaces/Preview";
+
+const DEFAULT_CLOCK_LABEL = "Novo local";
+
+function displayLabel(clock: ClockConfig) {
+  return clock.label && clock.label !== DEFAULT_CLOCK_LABEL
+    ? clock.label
+    : clock.location?.name ?? clock.label;
+}
 
 interface TimeNotOverlayProps {
   config: {
@@ -19,19 +28,14 @@ interface TimeNotOverlayProps {
       | "analog-tech"
       | "analog-dark";
     layout: "vertical" | "horizontal";
-    clocks: {
-      id: string;
-      label: string;
-      timezone: string;
-      format: "12h" | "24h";
-    }[];
+    clocks: ClockConfig[];
   };
 }
 
 export function TimeNotOverlay({ config }: TimeNotOverlayProps) {
   const [now, setNow] = useState(new Date());
   const [minuteKey, setMinuteKey] = useState(0);
-  const getTimeParts = (date: Date, timezone: string) => {
+  const getTimeParts = (date: Date, timezone: string | undefined) => {
     const parts = new Intl.DateTimeFormat("pt-BR", {
       timeZone: timezone,
       hour: "numeric",
@@ -71,9 +75,9 @@ export function TimeNotOverlay({ config }: TimeNotOverlayProps) {
       ? "flex items-center gap-10"
       : "flex flex-col gap-8";
 
-  const renderTime = (clock: any) => {
+  const renderTime = (clock: ClockConfig) => {
     const formatter = new Intl.DateTimeFormat("pt-BR", {
-      timeZone: clock.timezone,
+      timeZone: clock.location?.timezone,
       hour: "2-digit",
       minute: "2-digit",
       hour12: clock.format === "12h",
@@ -144,7 +148,10 @@ export function TimeNotOverlay({ config }: TimeNotOverlayProps) {
         );
 
       case "analog-minimal": {
-        const { hours, minutes, seconds } = getTimeParts(now, clock.timezone);
+        const { hours, minutes, seconds } = getTimeParts(
+          now,
+          clock.location?.timezone
+        );
 
         const hourDeg = (hours % 12) * 30 + minutes * 0.5;
         const minuteDeg = minutes * 6 + seconds * 0.1;
@@ -170,7 +177,10 @@ export function TimeNotOverlay({ config }: TimeNotOverlayProps) {
       }
 
       case "analog-neon": {
-        const { hours, minutes, seconds } = getTimeParts(now, clock.timezone);
+        const { hours, minutes, seconds } = getTimeParts(
+          now,
+          clock.location?.timezone
+        );
 
         const hourDeg = (hours % 12) * 30 + minutes * 0.5;
         const minuteDeg = minutes * 6 + seconds * 0.1;
@@ -199,7 +209,10 @@ export function TimeNotOverlay({ config }: TimeNotOverlayProps) {
       }
 
       case "analog-neon": {
-        const { hours, minutes, seconds } = getTimeParts(now, clock.timezone);
+        const { hours, minutes, seconds } = getTimeParts(
+          now,
+          clock.location?.timezone
+        );
 
         const hourDeg = (hours % 12) * 30 + minutes * 0.5;
         const minuteDeg = minutes * 6 + seconds * 0.1;
@@ -227,7 +240,10 @@ export function TimeNotOverlay({ config }: TimeNotOverlayProps) {
         );
       }
       case "analog-corporate": {
-        const { hours, minutes, seconds } = getTimeParts(now, clock.timezone);
+        const { hours, minutes, seconds } = getTimeParts(
+          now,
+          clock.location?.timezone
+        );
 
         const hourDeg = (hours % 12) * 30 + minutes * 0.5;
         const minuteDeg = minutes * 6 + seconds * 0.1;
@@ -261,7 +277,10 @@ export function TimeNotOverlay({ config }: TimeNotOverlayProps) {
         );
       }
       case "analog-tech": {
-        const { hours, minutes, seconds } = getTimeParts(now, clock.timezone);
+        const { hours, minutes, seconds } = getTimeParts(
+          now,
+          clock.location?.timezone
+        );
 
         const hourDeg = (hours % 12) * 30 + minutes * 0.5;
         const minuteDeg = minutes * 6 + seconds * 0.1;
@@ -302,7 +321,10 @@ export function TimeNotOverlay({ config }: TimeNotOverlayProps) {
         );
       }
       case "analog-dark": {
-        const { hours, minutes, seconds } = getTimeParts(now, clock.timezone);
+        const { hours, minutes, seconds } = getTimeParts(
+          now,
+          clock.location?.timezone
+        );
 
         const hourDeg = (hours % 12) * 30 + minutes * 0.5;
         const minuteDeg = minutes * 6 + seconds * 0.1;
@@ -365,7 +387,7 @@ export function TimeNotOverlay({ config }: TimeNotOverlayProps) {
         {config.clocks.map((clock) => (
           <div key={clock.id} className="flex flex-col items-center gap-3">
             <span className="text-4xl uppercase tracking-wide text-gray-400">
-              {clock.label}
+              {displayLabel(clock)}
             </span>
 
             {renderTime(clock)}
