@@ -2,7 +2,14 @@
 
 import { usePlayer } from "@/context/PlayerContext";
 import { X } from "lucide-react";
-import { PlayerCore } from "./PlayerCore";
+import dynamic from "next/dynamic";
+
+// pdfjs-dist (used by PlayerCore for PDF playlist items) touches browser-only
+// APIs (DOMMatrix) at module load time, so it must never be evaluated during SSR.
+const PlayerCore = dynamic(
+  () => import("./PlayerCore").then((mod) => mod.PlayerCore),
+  { ssr: false }
+);
 
 export function PlayerOverlay() {
   const { isOpen, playlist, closePlayer } = usePlayer();
