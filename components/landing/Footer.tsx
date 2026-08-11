@@ -58,16 +58,13 @@ export function Footer() {
             <h3 className="text-white font-semibold mb-4">Empresa</h3>
             <ul className="space-y-3">
               <li>
-                <a
-                  href="mailto:contato@jpmidia.com"
-                  className="hover:text-white transition-colors"
-                >
+                <Link href="/contact" className="hover:text-white transition-colors">
                   Contato
-                </a>
+                </Link>
               </li>
               <li>
                 <a
-                  href="mailto:contato@jpmidia.com"
+                  href="mailto:contato@wamanadev.com.br"
                   className="hover:text-white transition-colors"
                 >
                   Central de Suporte
