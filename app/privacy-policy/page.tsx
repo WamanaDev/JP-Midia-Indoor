@@ -1,8 +1,15 @@
-"use client";
-
+import { Metadata } from "next";
 import { ArrowLeft } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+
+export const metadata: Metadata = {
+  title: "Política de Privacidade",
+  description:
+    "Saiba como a JP Mídia Indoor coleta, usa e protege seus dados pessoais, em conformidade com a LGPD.",
+  alternates: { canonical: "/privacy-policy" },
+  robots: { index: true, follow: true },
+};
 
 export default function PrivacyPolicyPage() {
   return (

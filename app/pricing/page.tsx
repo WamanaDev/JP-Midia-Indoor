@@ -1,5 +1,19 @@
+import { Metadata } from "next";
 import { PricingClient } from "@/components/pricing/PricingClient";
 import { createClient } from "@/utils/supabase/server";
+
+export const metadata: Metadata = {
+  title: "Planos e Preços",
+  description:
+    "Compare os planos da JP Mídia Indoor: comece grátis, sem cartão de crédito, e evolua conforme seu negócio cresce. 7 dias de garantia incondicional em qualquer plano pago.",
+  alternates: { canonical: "/pricing" },
+  openGraph: {
+    url: "/pricing",
+    title: "Planos e Preços | JP Mídia Indoor",
+    description:
+      "Compare os planos da JP Mídia Indoor: comece grátis, sem cartão de crédito, e evolua conforme seu negócio cresce.",
+  },
+};
 
 export default async function PricingPage() {
   const supabase = await createClient();

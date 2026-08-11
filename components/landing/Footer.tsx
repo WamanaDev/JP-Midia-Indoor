@@ -15,7 +15,7 @@ export function Footer() {
                 <Link href="/">
                   <Image
                     src="/icons/Icons/logoquadrada.png"
-                    alt="Logo"
+                    alt="JP Mídia Indoor"
                     width={40}
                     height={40}
                   />

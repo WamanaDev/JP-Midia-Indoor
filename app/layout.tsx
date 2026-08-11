@@ -14,33 +14,65 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const SITE_URL =
+  process.env.NEXT_PUBLIC_SITE_URL || "https://jpmidia.wamanadev.com.br";
+
+const SITE_NAME = "JP Mídia Indoor";
+const SITE_DESCRIPTION =
+  "Plataforma de mídia indoor para gerenciar telas digitais em tempo real: playlists de imagem, vídeo e PDF, além de overlays de clima, hora e notícias. Comece grátis, sem cartão de crédito.";
+
 export const metadata: Metadata = {
-  title: "JP Mídia Indoor",
-  description:
-    "A nova identidade visual da JP Mídia une tecnologia, automação e confiabilidade em uma experiência moderna para dashboards e mídia indoor.",
-  keywords:
-    "JP Mídia, mídia indoor, automação, dashboard, identidade visual, tecnologia, PWA, design system, telas digitais",
+  metadataBase: new URL(SITE_URL),
+  title: {
+    default: `${SITE_NAME} — Gestão de telas digitais e comunicação visual`,
+    template: `%s | ${SITE_NAME}`,
+  },
+  description: SITE_DESCRIPTION,
+  keywords: [
+    "mídia indoor",
+    "sinalização digital",
+    "digital signage",
+    "gestão de telas digitais",
+    "TV corporativa",
+    "playlist de mídia",
+    "comunicação visual",
+    "automação de telas",
+  ],
+  applicationName: SITE_NAME,
+  authors: [{ name: "JP Mídia Indoor" }],
+  alternates: {
+    canonical: "/",
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-image-preview": "large",
+    },
+  },
   openGraph: {
     type: "website",
-    url: "https://jpmidia.com/",
-    title: "JP Mídia — Automação e Mídia Indoor com Tecnologia",
-    description:
-      "Identidade visual moderna para uma plataforma inteligente de mídia indoor. Eficiência, conectividade e design escalável.",
+    locale: "pt_BR",
+    url: "/",
+    siteName: SITE_NAME,
+    title: `${SITE_NAME} — Gestão de telas digitais e comunicação visual`,
+    description: SITE_DESCRIPTION,
     images: [
       {
-        url: "https://jpmidia.com/og-image.jpg",
+        url: "/opengraph-image",
         width: 1200,
         height: 630,
+        alt: SITE_NAME,
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    site: "@jpmidia",
-    title: "JP Mídia — Automação e Mídia Indoor",
-    description:
-      "Tecnologia, dados e automação em uma identidade visual moderna e intuitiva.",
-    images: ["https://jpmidia.com/og-image.jpg"],
+    title: `${SITE_NAME} — Gestão de telas digitais e comunicação visual`,
+    description: SITE_DESCRIPTION,
+    images: ["/opengraph-image"],
   },
   verification: {
     google: "i_nZnDoIDM9dnl3zcFozhbTg9-y3Q8_CR-blejQYWAk",
@@ -61,7 +93,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="pt-BR" suppressHydrationWarning>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         suppressHydrationWarning

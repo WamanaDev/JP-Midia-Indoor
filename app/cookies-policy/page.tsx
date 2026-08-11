@@ -1,6 +1,15 @@
+import { Metadata } from "next";
 import { ArrowLeft } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+
+export const metadata: Metadata = {
+  title: "Política de Cookies",
+  description:
+    "Entenda como a JP Mídia Indoor usa cookies para melhorar sua experiência na plataforma.",
+  alternates: { canonical: "/cookies-policy" },
+  robots: { index: true, follow: true },
+};
 
 export default function PoliticaDeCookiesPage() {
   return (

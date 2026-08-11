@@ -1,8 +1,15 @@
-"use client";
-
+import { Metadata } from "next";
 import { ArrowLeft } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+
+export const metadata: Metadata = {
+  title: "Termos de Serviço",
+  description:
+    "Consulte os Termos de Serviço da JP Mídia Indoor: condições de uso, planos, cancelamento e direito de arrependimento.",
+  alternates: { canonical: "/terms-of-service" },
+  robots: { index: true, follow: true },
+};
 
 export default function TermsOfServicePage() {
   return (
