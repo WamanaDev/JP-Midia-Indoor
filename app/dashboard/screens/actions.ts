@@ -30,7 +30,13 @@ export async function toggleScreenAction(id: string, isActive: boolean) {
   revalidatePath("/dashboard/screens");
 }
 
-export async function checkDeviceCode(code: string) {
+export type CheckDeviceCodeResult =
+  | { success: true }
+  | { success: false; error: string };
+
+export async function checkDeviceCode(
+  code: string
+): Promise<CheckDeviceCodeResult> {
   const supabase = await createClient();
 
   // 1️⃣ Verificar se o dispositivo existe
@@ -41,21 +47,33 @@ export async function checkDeviceCode(code: string) {
     .single();
 
   if (error || !data) {
-    throw new Error("Dispositivo não encontrado");
+    return {
+      success: false,
+      error: "Código não encontrado. Verifique e tente novamente.",
+    };
   }
 
   // 2️⃣ Enviar mensagem para o dispositivo via canal usando httpSend
-  const channel = supabase.channel(`device-link-${code}`);
+  try {
+    const channel = supabase.channel(`device-link-${code}`);
 
-  // envia a mensagem via REST
-  await channel.httpSend(
-    "device_status", // nome do evento
-    {
-      status: "configuring",
-      message: "Dispositivo em configuração...",
-      timestamp: Date.now(),
-    }
-  );
+    // envia a mensagem via REST
+    await channel.httpSend(
+      "device_status", // nome do evento
+      {
+        status: "configuring",
+        message: "Dispositivo em configuração...",
+        timestamp: Date.now(),
+      }
+    );
+  } catch (err) {
+    console.error("Erro ao notificar dispositivo:", err);
+    return {
+      success: false,
+      error: "Não foi possível conectar ao dispositivo. Tente novamente.",
+    };
+  }
+
   return { success: true };
 }
 

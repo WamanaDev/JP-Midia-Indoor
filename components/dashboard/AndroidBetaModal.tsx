@@ -1,9 +1,12 @@
 "use client";
 
-import { Tv, X, Mail } from "lucide-react";
+import { Tv, X, Mail, MessageCircle, ExternalLink } from "lucide-react";
 import { useEffect, useState } from "react";
 
 const SUPPORT_EMAIL = "contato@wamanadev.com.br";
+const SUPPORT_WHATSAPP_NUMBER = "5516998894618";
+const PLAY_STORE_URL =
+  "https://play.google.com/store/apps/details?id=com.wamanadev.jpmidia";
 export const ANDROID_BETA_MODAL_SHOWN_KEY = "android_beta_modal_shown";
 
 export function AndroidBetaModal() {
@@ -46,32 +49,54 @@ export function AndroidBetaModal() {
         </div>
 
         <div className="p-6">
-          <p className="text-gray-600 dark:text-gray-400 text-center mb-6">
-            Quer ajudar a testar o nosso aplicativo para TV Android? Envie um
-            e-mail para{" "}
+          <p className="text-gray-600 dark:text-gray-400 text-center mb-4">
+            O aplicativo para TV Android está em{" "}
             <span className="font-semibold text-gray-900 dark:text-white">
-              {SUPPORT_EMAIL}
+              teste fechado
             </span>{" "}
-            e aguarde: você vai receber por e-mail o link para baixar o app.
+            na Google Play. Para acessá-lo, você precisa ser incluído no
+            grupo de testes — solicite por e-mail ou WhatsApp.
           </p>
 
-          <div className="flex gap-3">
-            <button
-              onClick={() => setIsOpen(false)}
-              className="flex-1 px-4 py-2.5 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors font-medium"
-            >
-              Agora não
-            </button>
+          <a
+            href={PLAY_STORE_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center justify-center gap-2 text-sm text-blue-600 dark:text-blue-400 hover:underline mb-6 break-all"
+          >
+            <ExternalLink className="w-4 h-4 shrink-0" />
+            Ver app na Google Play
+          </a>
+
+          <div className="flex flex-col gap-3">
             <a
               href={`mailto:${SUPPORT_EMAIL}?subject=${encodeURIComponent(
                 "Quero testar o app para TV Android"
               )}`}
               onClick={() => setIsOpen(false)}
-              className="flex-1 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors font-medium flex items-center justify-center gap-2"
+              className="px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors font-medium flex items-center justify-center gap-2"
             >
               <Mail className="w-4 h-4" />
               Enviar e-mail
             </a>
+            <a
+              href={`https://wa.me/${SUPPORT_WHATSAPP_NUMBER}?text=${encodeURIComponent(
+                "Olá! Quero ser incluído no teste fechado do app JP Mídia para TV Android."
+              )}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={() => setIsOpen(false)}
+              className="px-4 py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors font-medium flex items-center justify-center gap-2"
+            >
+              <MessageCircle className="w-4 h-4" />
+              Chamar no WhatsApp
+            </a>
+            <button
+              onClick={() => setIsOpen(false)}
+              className="px-4 py-2.5 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors font-medium"
+            >
+              Agora não
+            </button>
           </div>
         </div>
       </div>

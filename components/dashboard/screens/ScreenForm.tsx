@@ -38,17 +38,20 @@ export function ScreenForm({
       return;
     }
 
-    try {
-      setVinculation(true);
-      await checkDeviceCode(code);
-      setStep(2);
-    } catch (err: unknown) {
-      const message =
-        err instanceof Error
-          ? err.message
-          : "Erro inesperado ao validar o código";
+    setError("");
+    setVinculation(true);
 
-      setError(message);
+    try {
+      const result = await checkDeviceCode(code);
+
+      if (!result.success) {
+        setError(result.error);
+        return;
+      }
+
+      setStep(2);
+    } catch {
+      setError("Erro inesperado ao validar o código");
     } finally {
       setVinculation(false);
     }
