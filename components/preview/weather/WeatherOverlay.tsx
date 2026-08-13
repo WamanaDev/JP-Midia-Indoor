@@ -1,10 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Thermometer } from "lucide-react";
-import { GaugeWeather } from "./styles/GaugeWeather";
-import { WaveWeather } from "./styles/WaveWeather";
-import { ThreeBadge } from "@/components/preview/shared/ThreeBadge";
+import { ChipStyleId, WeatherStyleId } from "@/interfaces/Preview";
+import { CHIP_STYLES } from "@/components/preview/shared/chipStyles";
+import { WEATHER_ONLY_STYLES } from "./styles/registry";
+import { conditionFromCode, weatherIcon } from "@/lib/weather-condition";
 
 /* ================= TYPES ================= */
 
@@ -23,20 +23,7 @@ interface WeatherLocation {
 interface WeatherOverlayProps {
   config: {
     position: "top-left" | "top-right" | "bottom-left" | "bottom-right";
-    style:
-      | "minimal"
-      | "badge"
-      | "card"
-      | "digital"
-      | "glass"
-      | "pulse"
-      | "neon"
-      | "corporate"
-      | "tech"
-      | "dark"
-      | "gauge"
-      | "wave"
-      | "sphere";
+    style: WeatherStyleId;
     locations: WeatherLocation[];
   };
 }
@@ -44,6 +31,8 @@ interface WeatherOverlayProps {
 interface WeatherData {
   temperature: number | null;
   unit: "C" | "F";
+  weathercode: number | null;
+  isDay: boolean;
 }
 
 /* ================= COMPONENT ================= */
@@ -74,6 +63,8 @@ export function WeatherOverlay({ config }: WeatherOverlayProps) {
         [loc.id]: {
           temperature: json.temperature ?? null,
           unit: json.unit ?? "C",
+          weathercode: json.weathercode ?? null,
+          isDay: json.isDay ?? true,
         },
       }));
     } catch (e) {
@@ -136,97 +127,27 @@ export function WeatherOverlay({ config }: WeatherOverlayProps) {
       ? ((weather.temperature - 32) * 5) / 9
       : weather.temperature;
 
+  const condition = conditionFromCode(weather?.weathercode);
+  const Icon = weatherIcon(condition, weather?.isDay ?? true);
+
   /* ================= RENDER TEMP ================= */
 
   const renderTemp = () => {
-    switch (config.style) {
-      case "badge":
-        return (
-          <div className="px-4 py-2 bg-white text-gray-800 text-2xl font-medium rounded-full shadow">
-            {value}
-          </div>
-        );
-
-      case "card":
-        return (
-          <div className="flex items-center gap-2 bg-white text-gray-800 text-2xl px-4 py-2 rounded-lg shadow">
-            <Thermometer className="w-4 h-4" />
-            <span className="font-semibold">{value}</span>
-          </div>
-        );
-
-      case "digital":
-        return (
-          <div className="px-4 py-2 bg-black text-green-400 font-mono text-2xl tracking-widest rounded shadow-inner">
-            {value}
-          </div>
-        );
-
-      case "glass":
-        return (
-          <div className="backdrop-blur-md bg-white/20 border border-white/30 px-5 py-2 rounded-xl shadow-xl text-white text-2xl font-semibold">
-            {value}
-          </div>
-        );
-
-      case "pulse":
-        return (
-          <div className="text-white text-2xl font-bold animate-[time-pulse_0.8s_ease-out]">
-            {value}
-          </div>
-        );
-
-      case "neon":
-        return (
-          <div className="text-cyan-400 text-2xl font-bold shadow-[0_0_12px_#22d3ee]">
-            {value}
-          </div>
-        );
-
-      case "corporate":
-        return (
-          <div className="bg-white border border-gray-300 px-5 py-2 rounded-lg text-gray-800 text-2xl font-semibold shadow">
-            {value}
-          </div>
-        );
-
-      case "tech":
-        return (
-          <div className="bg-slate-900 border border-slate-700 px-5 py-2 rounded-lg text-cyan-400 text-2xl font-mono shadow">
-            {value}
-          </div>
-        );
-
-      case "dark":
-        return (
-          <div className="bg-gradient-to-br from-black to-gray-900 px-5 py-2 rounded-lg text-white text-2xl font-semibold shadow-lg">
-            {value}
-          </div>
-        );
-
-      /* ===== NOVOS (GSAP por valor + Three.js) ===== */
-
-      case "gauge":
-        return <GaugeWeather value={value} celsius={celsius} />;
-
-      case "wave":
-        return <WaveWeather value={value} />;
-
-      case "sphere":
-        return (
-          <div className="relative w-24 h-24 flex items-center justify-center">
-            <div className="absolute inset-0 flex items-center justify-center">
-              <ThreeBadge size={96} geometry="torus" color={0x0ea5e9} />
-            </div>
-            <span className="relative text-lg font-semibold text-white drop-shadow-[0_1px_4px_rgba(0,0,0,0.8)]">
-              {value}
-            </span>
-          </div>
-        );
-
-      default:
-        return <div className="text-2xl font-semibold text-white">{value}</div>;
+    const OnlyStyle = WEATHER_ONLY_STYLES[config.style];
+    if (OnlyStyle) {
+      return <OnlyStyle value={value} celsius={celsius} size="sm" />;
     }
+
+    const Chip = CHIP_STYLES[config.style as ChipStyleId] ?? CHIP_STYLES.minimal;
+    return (
+      <Chip
+        value={value}
+        label={location.label}
+        icon={Icon}
+        size="sm"
+        sphere={{ geometry: "torus", color: 0x0ea5e9 }}
+      />
+    );
   };
 
   /* ================= UI ================= */

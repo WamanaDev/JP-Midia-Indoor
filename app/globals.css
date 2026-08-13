@@ -54,3 +54,73 @@
     transform: translateY(0);
   }
 }
+
+@keyframes chip-breathe {
+  0%,
+  100% {
+    box-shadow: 0 0 4px rgba(167, 139, 250, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 16px rgba(167, 139, 250, 0.85);
+  }
+}
+
+@keyframes chip-marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-100%);
+  }
+}
+
+@keyframes led-flicker {
+  0%,
+  92%,
+  100% {
+    opacity: 1;
+  }
+  94% {
+    opacity: 0.4;
+  }
+  96% {
+    opacity: 1;
+  }
+}
+
+@keyframes neon-flicker {
+  0%,
+  90%,
+  100% {
+    opacity: 1;
+  }
+  92% {
+    opacity: 0.5;
+  }
+}
+
+@keyframes terminal-cursor {
+  50% {
+    opacity: 0;
+  }
+}
+
+@keyframes sunrise-shift {
+  from {
+    filter: hue-rotate(0deg);
+  }
+  to {
+    filter: hue-rotate(-14deg);
+  }
+}
+
+@keyframes slide-in-left {
+  from {
+    transform: translateX(-6%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}

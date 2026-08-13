@@ -25,12 +25,269 @@ import {
 } from "lucide-react";
 import { ReactNode, useState } from "react";
 import { OverlayToggle } from "./shared/OverlayToggle";
+import { StylePicker, StyleOption } from "./shared/StylePicker";
+import { NewsOverlayStyleId } from "@/components/preview/news/styles/registry";
+import { NewsFullscreenTemplateId } from "@/interfaces/Preview";
+
 type NewsConfig = Record<string, string[]>;
 
 interface PlaylistConfig {
   overlay: boolean;
   news: NewsConfig;
+  /** Só usado quando overlay=true. Ausente = visual atual (fixo por fonte). */
+  style?: NewsOverlayStyleId;
+  /** Só usado quando overlay=false. Ausente = visual atual (fixo por fonte). */
+  fullscreenStyle?: NewsFullscreenTemplateId;
 }
+
+const SAMPLE_TITLE = "Prefeitura anuncia obras na Av. Central";
+
+const NEWS_STYLES: StyleOption[] = [
+  {
+    id: "news-ticker-chip",
+    label: "Chip de notícia",
+    preview: (
+      <div className="flex items-center gap-2 bg-black/75 rounded-md px-3 py-1.5 max-w-full">
+        <span className="w-1.5 h-1.5 rounded-full bg-red-500 flex-none" />
+        <span className="text-white text-xs font-semibold truncate">{SAMPLE_TITLE}</span>
+      </div>
+    ),
+  },
+  {
+    id: "news-marquee",
+    label: "Manchete corrida",
+    preview: (
+      <div className="flex items-center gap-2 bg-black/75 rounded-md px-3 py-1.5 max-w-full overflow-hidden">
+        <span className="w-1.5 h-1.5 rounded-full bg-red-500 flex-none" />
+        <span className="text-white text-xs font-semibold whitespace-nowrap">{SAMPLE_TITLE}</span>
+      </div>
+    ),
+  },
+  {
+    id: "news-mini-card",
+    label: "Mini card",
+    preview: (
+      <div className="flex items-center gap-2 bg-white rounded-lg shadow px-2 py-1.5 max-w-full">
+        <span className="w-8 h-8 rounded-lg flex-none bg-gradient-to-br from-amber-500 to-amber-800" />
+        <span className="text-neutral-900 text-xs font-semibold line-clamp-2">{SAMPLE_TITLE}</span>
+      </div>
+    ),
+  },
+  {
+    id: "news-alert-strip",
+    label: "Alerta",
+    preview: (
+      <div className="flex flex-col gap-0.5 bg-neutral-950 border-l-4 border-red-500 rounded-r-lg px-3 py-1.5 max-w-full">
+        <span className="text-red-400 text-[9px] font-mono uppercase tracking-wider">Última hora</span>
+        <span className="text-white text-xs font-semibold truncate">{SAMPLE_TITLE}</span>
+      </div>
+    ),
+  },
+  {
+    id: "news-qr-corner",
+    label: "QR discreto",
+    preview: (
+      <div className="flex items-center gap-2 bg-black/75 rounded-lg px-2 py-1.5 max-w-full">
+        <span className="w-7 h-7 rounded bg-white grid grid-cols-3 gap-px p-0.5 flex-none">
+          {[...Array(9)].map((_, i) => (
+            <span key={i} className={i % 2 === 0 ? "bg-neutral-900" : "bg-white"} />
+          ))}
+        </span>
+        <span className="text-white text-xs font-semibold truncate">{SAMPLE_TITLE}</span>
+      </div>
+    ),
+  },
+];
+
+const FULLSCREEN_TEMPLATES: StyleOption[] = [
+  {
+    id: "",
+    label: "Nenhum (visual atual)",
+    preview: <div className="text-white text-[10px] px-2 text-center">Visual fixo por fonte</div>,
+  },
+  {
+    id: "broadcast-lower-third",
+    label: "Barra Telejornal",
+    preview: (
+      <div className="w-full h-full bg-neutral-950 flex items-end">
+        <div className="w-full bg-amber-500 text-neutral-950 text-[9px] font-bold px-2 py-1 truncate">
+          {SAMPLE_TITLE}
+        </div>
+      </div>
+    ),
+  },
+  {
+    id: "magazine-cover",
+    label: "Capa de Revista",
+    preview: (
+      <div className="w-full h-full bg-[#f4f2ec] flex items-center justify-center px-2">
+        <span className="font-serif text-neutral-900 text-[10px] text-center">{SAMPLE_TITLE}</span>
+      </div>
+    ),
+  },
+  {
+    id: "news-hero-banner",
+    label: "Banner Breaking News",
+    preview: (
+      <div className="w-full h-full bg-gradient-to-t from-black to-neutral-800 flex items-end p-2">
+        <span className="text-white text-[9px] font-bold truncate">{SAMPLE_TITLE}</span>
+      </div>
+    ),
+  },
+  {
+    id: "gallery-frame",
+    label: "Moldura de Galeria",
+    preview: (
+      <div className="w-full h-full bg-[#efece4] flex items-center justify-center px-2">
+        <span className="font-serif text-neutral-800 text-[9px] text-center">{SAMPLE_TITLE}</span>
+      </div>
+    ),
+  },
+  {
+    id: "polaroid-frame",
+    label: "Polaroid",
+    preview: (
+      <div className="w-full h-full bg-[#e9e6de] flex items-center justify-center">
+        <div className="bg-white shadow px-2 py-2 -rotate-3">
+          <div className="w-10 h-6 bg-amber-500 mb-1" />
+          <span className="text-neutral-900 text-[8px]">Obras...</span>
+        </div>
+      </div>
+    ),
+  },
+  {
+    id: "news-split-qr",
+    label: "Split com QR",
+    preview: (
+      <div className="w-full h-full flex">
+        <div className="flex-1 bg-purple-900" />
+        <div className="flex-1 bg-neutral-950 flex items-center justify-center">
+          <span className="text-white text-[8px] px-1">Obras...</span>
+        </div>
+      </div>
+    ),
+  },
+  {
+    id: "news-caption-card",
+    label: "Legenda Editorial",
+    preview: (
+      <div className="w-full h-full bg-neutral-950 flex items-center justify-center px-2">
+        <span className="font-serif italic text-white text-[9px] text-center">&ldquo;{SAMPLE_TITLE}&rdquo;</span>
+      </div>
+    ),
+  },
+  {
+    id: "news-dossier",
+    label: "Dossiê",
+    preview: (
+      <div className="w-full h-full bg-[#efece4] flex items-center justify-center px-2">
+        <span className="font-serif text-neutral-900 text-[9px] text-center">{SAMPLE_TITLE}</span>
+      </div>
+    ),
+  },
+  {
+    id: "news-anchor-desk",
+    label: "Bancada",
+    preview: (
+      <div className="w-full h-full bg-neutral-950 flex items-end">
+        <div className="w-full px-2 py-1">
+          <span className="text-white text-[9px] font-bold block truncate">{SAMPLE_TITLE}</span>
+          <span className="text-white/50 text-[7px] block truncate">Prefeitura confirma início...</span>
+        </div>
+      </div>
+    ),
+  },
+  {
+    id: "filmstrip-row",
+    label: "Fita de Filme",
+    preview: (
+      <div className="w-full h-full bg-neutral-950 flex">
+        <div className="flex-1 px-1 py-1 text-white text-[7px] leading-tight line-clamp-3">{SAMPLE_TITLE}</div>
+        <div className="flex-1 px-1 py-1 border-l border-dotted border-white/25 text-white text-[7px] leading-tight line-clamp-3">
+          Feira de artesanato agita o centro
+        </div>
+      </div>
+    ),
+  },
+  {
+    id: "ledger-rows",
+    label: "Linhas de Jornal",
+    preview: (
+      <div className="w-full h-full bg-[#f4f2ec] flex flex-col justify-center gap-1 px-2">
+        <span className="text-neutral-900 text-[8px] font-serif border-t border-neutral-400/50 pt-1">{SAMPLE_TITLE}</span>
+        <span className="text-neutral-900 text-[8px] font-serif border-t border-neutral-400/50 pt-1">Nova ciclovia inaugurada</span>
+      </div>
+    ),
+  },
+  {
+    id: "carousel-fan",
+    label: "Leque",
+    preview: (
+      <div className="relative w-full h-full bg-neutral-950 flex items-center justify-center">
+        <div className="absolute w-16 h-10 bg-white rounded shadow -rotate-6" />
+        <div className="absolute w-16 h-10 bg-white rounded shadow translate-x-2 rotate-6 z-10" />
+      </div>
+    ),
+  },
+  {
+    id: "info-strip-bottom",
+    label: "Faixa Inferior",
+    preview: (
+      <div className="w-full h-full bg-neutral-800 flex items-end">
+        <div className="w-full flex bg-black/60">
+          <span className="flex-1 text-white text-[7px] px-1 py-1 truncate">{SAMPLE_TITLE}</span>
+          <span className="flex-1 text-white text-[7px] px-1 py-1 border-l border-white/15 truncate">Ciclovia</span>
+        </div>
+      </div>
+    ),
+  },
+  {
+    id: "newsroom-grid",
+    label: "Parede de Redação",
+    preview: (
+      <div className="w-full h-full flex gap-0.5">
+        <div className="flex-1 bg-[#12151c] border-t-4 border-amber-500 text-white text-[7px] px-1 py-1 line-clamp-3">
+          {SAMPLE_TITLE}
+        </div>
+        <div className="flex-1 bg-[#12151c] border-t-4 border-teal-400 text-white text-[7px] px-1 py-1 line-clamp-3">
+          Ciclovia inaugurada
+        </div>
+      </div>
+    ),
+  },
+  {
+    id: "archive-cards",
+    label: "Fichário",
+    preview: (
+      <div className="w-full h-full bg-[#e9e6de] flex flex-col items-center justify-center gap-1">
+        <span className="bg-white shadow px-2 py-0.5 text-neutral-900 text-[8px] -translate-x-1">{SAMPLE_TITLE}</span>
+        <span className="bg-white shadow px-2 py-0.5 text-neutral-900 text-[8px] translate-x-1">Ciclovia</span>
+      </div>
+    ),
+  },
+  {
+    id: "news-wall-qr",
+    label: "Mural com QR",
+    preview: (
+      <div className="w-full h-full flex gap-1 p-1">
+        <div className="flex-1 bg-[#12151c] rounded p-1 flex flex-col gap-1">
+          <span className="text-white text-[7px] line-clamp-2">{SAMPLE_TITLE}</span>
+          <span className="w-3 h-3 bg-white rounded-sm" />
+        </div>
+      </div>
+    ),
+  },
+  {
+    id: "news-digest-list",
+    label: "Resumo do Dia",
+    preview: (
+      <div className="w-full h-full bg-[#f4f2ec] flex flex-col justify-center gap-1 px-2">
+        <span className="text-neutral-900 text-[8px] font-semibold">{SAMPLE_TITLE}</span>
+        <span className="text-neutral-600 text-[7px] line-clamp-1">Início previsto para o mês que vem</span>
+      </div>
+    ),
+  },
+];
 /* ================= DATA ================= */
 
 type Feed = {
@@ -669,6 +926,28 @@ export function NewsForm({ value, onChange }: MediaFormProps) {
         enabled={config.overlay}
         onToggle={() => updateConfig({ overlay: !config.overlay })}
       />
+
+      {config.overlay && (
+        <StylePicker
+          title="Estilo do overlay"
+          styles={NEWS_STYLES}
+          value={config.style ?? "news-ticker-chip"}
+          onChange={(style) => updateConfig({ style: style as NewsOverlayStyleId })}
+        />
+      )}
+
+      {!config.overlay && (
+        <StylePicker
+          title="Template de tela cheia (opcional)"
+          styles={FULLSCREEN_TEMPLATES}
+          value={config.fullscreenStyle ?? ""}
+          onChange={(fullscreenStyle) =>
+            updateConfig({
+              fullscreenStyle: (fullscreenStyle || undefined) as NewsFullscreenTemplateId | undefined,
+            })
+          }
+        />
+      )}
 
       {/* ===== PROVIDERS ===== */}
       <div className="space-y-3">

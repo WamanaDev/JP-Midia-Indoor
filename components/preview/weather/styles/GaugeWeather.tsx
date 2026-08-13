@@ -6,6 +6,7 @@ interface GaugeWeatherProps {
   value: string;
   /** Raw temperature in Celsius, used only to position the gauge arc. */
   celsius: number | null;
+  size?: "sm" | "lg";
 }
 
 const MIN_C = -10;
@@ -19,7 +20,7 @@ const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
  * `stroke-dashoffset` — `react-native-svg` exposes the same Circle/
  * strokeDashoffset API, so this maps over to React Native almost as-is.
  */
-export function GaugeWeather({ value, celsius }: GaugeWeatherProps) {
+export function GaugeWeather({ value, celsius, size = "sm" }: GaugeWeatherProps) {
   const clamped =
     celsius === null
       ? 0
@@ -32,10 +33,11 @@ export function GaugeWeather({ value, celsius }: GaugeWeatherProps) {
   );
 
   const offset = CIRCUMFERENCE * (1 - progress);
+  const px = size === "lg" ? 180 : 96;
 
   return (
-    <div className="relative w-24 h-24 flex items-center justify-center">
-      <svg width={96} height={96} viewBox="0 0 96 96" className="-rotate-90">
+    <div className="relative flex items-center justify-center" style={{ width: px, height: px }}>
+      <svg width={px} height={px} viewBox="0 0 96 96" className="-rotate-90">
         <circle
           cx={48}
           cy={48}
@@ -57,7 +59,7 @@ export function GaugeWeather({ value, celsius }: GaugeWeatherProps) {
         />
       </svg>
 
-      <span className="absolute text-lg font-semibold text-white">
+      <span className={`absolute font-semibold text-white ${size === "lg" ? "text-3xl" : "text-lg"}`}>
         {value}
       </span>
     </div>

@@ -35,5 +35,7 @@ export async function GET(req: Request) {
   return NextResponse.json({
     temperature: json.current_weather?.temperature ?? null,
     unit: "C",
+    weathercode: json.current_weather?.weathercode ?? null,
+    isDay: json.current_weather?.is_day === 1,
   });
 }

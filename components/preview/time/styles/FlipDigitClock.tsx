@@ -4,6 +4,7 @@ import { useAnimatedValue } from "@/components/preview/shared/useAnimatedValue";
 
 interface FlipDigitClockProps {
   time: string;
+  size?: "sm" | "lg";
 }
 
 /**
@@ -12,7 +13,7 @@ interface FlipDigitClockProps {
  * (`flip`) rather than a CSS keyframe, so the same tween recipe can drive
  * a native `transform: [{ rotateX }]` in React Native later.
  */
-export function FlipDigitClock({ time }: FlipDigitClockProps) {
+export function FlipDigitClock({ time, size = "sm" }: FlipDigitClockProps) {
   const { flip } = useAnimatedValue(
     { flip: -90 },
     { flip: 0, duration: 0.45, ease: "back.out(1.7)" },
@@ -22,7 +23,9 @@ export function FlipDigitClock({ time }: FlipDigitClockProps) {
   return (
     <div style={{ perspective: 400 }}>
       <div
-        className="bg-black px-6 py-3 rounded-xl shadow-xl text-white font-mono text-2xl tabular-nums"
+        className={`bg-black text-white font-mono tabular-nums shadow-xl ${
+          size === "lg" ? "px-8 py-4 rounded-2xl text-6xl" : "px-6 py-3 rounded-xl text-2xl"
+        }`}
         style={{ transform: `rotateX(${flip}deg)` }}
       >
         {time}

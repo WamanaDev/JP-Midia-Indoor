@@ -3,12 +3,15 @@
 import { useEffect, useMemo, useState } from "react";
 import { Metropole } from "./Metropoles";
 import { G1 } from "./G1";
+import { NEWS_OVERLAY_STYLES, NewsOverlayStyleId } from "./styles/registry";
 
 /* ================= TYPES ================= */
 
 type NewsConfig = {
   news: Record<string, string[]>;
   interval?: number;
+  /** Estilo visual do overlay. Ausente = comportamento atual (visual fixo por fonte, G1/Metrópole). */
+  style?: NewsOverlayStyleId;
 };
 
 type NewsItem = {
@@ -108,6 +111,7 @@ export function NewsOverlay({ config }: NewsOverlayProps) {
   }
 
   const item = items[index];
+  const Style = config.style ? NEWS_OVERLAY_STYLES[config.style] : null;
 
   return (
     <div className="pointer-events-none select-none absolute bottom-6 left-1/2 -translate-x-1/2 z-150">
@@ -119,8 +123,14 @@ export function NewsOverlay({ config }: NewsOverlayProps) {
           }
         `}
       >
-        {item.source === "Metrópole" && <Metropole overlay item={item} />}
-        {item.source === "G1" && <G1 overlay item={item} />}
+        {Style ? (
+          <Style item={item} />
+        ) : (
+          <>
+            {item.source === "Metrópole" && <Metropole overlay item={item} />}
+            {item.source === "G1" && <G1 overlay item={item} />}
+          </>
+        )}
       </div>
     </div>
   );
