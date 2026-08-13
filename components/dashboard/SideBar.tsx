@@ -6,6 +6,7 @@ import {
   LogOut,
   Monitor,
   Moon,
+  Siren,
   Sun,
   Tv,
   Upload,
@@ -41,6 +42,7 @@ const menuItems = [
   },
   { id: "medias", icon: Upload, label: "Mídias", href: "/dashboard/medias" },
   { id: "screens", icon: Tv, label: "Telas", href: "/dashboard/screens" },
+  { id: "alerts", icon: Siren, label: "Alertas", href: "/dashboard/alerts" },
   {
     id: "subscriptions",
     icon: Wallet,
